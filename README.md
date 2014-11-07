@@ -9,6 +9,6 @@ Clone the repository:
 
 Add symbolic links in the appropriate location:
 
-`ln -sfn <symlink location> <path to file>`
+`ln -sfn <path to file> <symlink location>`
 
 **This overwrites any existing file**
