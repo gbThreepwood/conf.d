@@ -51,3 +51,33 @@ if (( ${+terminfo[smkx]} )) && (( ${+terminfo[rmkx]} )); then
     zle -N zle-line-init
     zle -N zle-line-finish
 fi
+
+# Initialize colors.
+autoload -U colors
+colors
+ 
+# Allow for functions in the prompt.
+setopt PROMPT_SUBST
+ 
+# Autoload zsh functions.
+fpath=(~/git/conf.d/zsh/functions $fpath)
+autoload -U ~/git/conf.d/zsh/functions/*(:t)
+ 
+# Enable auto-execution of functions.
+typeset -ga preexec_functions
+typeset -ga precmd_functions
+typeset -ga chpwd_functions
+ 
+# Append git functions needed for prompt.
+preexec_functions+='preexec_update_git_vars'
+precmd_functions+='precmd_update_git_vars'
+chpwd_functions+='chpwd_update_git_vars'
+ 
+# Set the prompt.
+PROMPT=$'%{${fg[cyan]}%}%B%~%b$(prompt_git_info)%{${fg[default]}%} '
+
+LS_COLORS='no=00;37:fi=00:di=00;33:ln=04;36:pi=40;33:so=01;35:bd=40;33;01:'
+export LS_COLORS
+zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
+
+alias ls='ls -hF --color=auto'
