@@ -1,0 +1,67 @@
+* Swap up and down so they match with Vim JK movements.
+[up]>[down]
+[kp-up]>[kp-down]
+[down]>[up]
+[kp-down]>[kp-up]
+ 
+* Add escape to the caps lock for use in Vim.
+[caps]>[escape][t&h500][caps]
+
+[kp7]>[7]
+[kp8]>[8]
+[kp9]>[9]
+[kp0]>[0]
+[kp4]>[4]
+[kp5]>[5]
+[kp6]>[6]
+[kp1]>[1]
+[kp2]>[2]
+[kp3]>[3]
+
+* Map delete to rwin for use in i3.
+[delete]>[rwin]
+[rwin]>[ralt]
+[kp-rwin]>[kp-ralt]
+
+* ============= Norwegian keyboard remaps =============
+* Useful remaps for norwegain keymap users.
+* Keeps æøå in the default positions, but moves some
+* other things around.
+*
+
+* {}
+{obrack}>{speed9}{-ralt}{7}{+ralt}
+{cbrack}>{speed9}{-ralt}{0}{+ralt}
+
+* []
+{lshift}{obrack}>{speed9}{-ralt}{8}{+ralt}
+{rshift}{obrack}>{speed9}{-ralt}{8}{+ralt}
+{lshift}{cbrack}>{speed9}{-ralt}{9}{+ralt}
+{rshift}{cbrack}>{speed9}{-ralt}{9}{+ralt}
+
+* lower case å
+{\}>{obrack}
+
+* capital Å
+{rshift}{\}>{-rshift}{obrack}{+rshift}
+{lshift}{\}>{-lshift}{obrack}{+lshift}
+
+* ~^"
+{ralt}{7}>{-ralt}{cbrack}{+ralt}
+{ralt}{8}>{-rshift}{cbrack}{+rshift}
+{ralt}{9}>{cbrack}
+
+* ˝
+{ralt}{0}>{-ralt}{\}{+ralt}
+
+* Add the ', and the * to the up and down arrows.
+{rshift}{up}>{\}
+{rshift}{down}>{-rshift}{\}{+rshift}
+{lshift}{up}>{\}
+{lshift}{down}>{-rshift}{\}{+rshift}
+
+* Add the @, and the $ to the left and right arrows.
+{lshift}{left}>{-ralt}{2}{+ralt}
+{rshift}{left}>{-ralt}{2}{+ralt}
+{lshift}{right}>{-ralt}{4}{+ralt}
+{rshift}{right}>{-ralt}{4}{+ralt}
