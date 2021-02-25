@@ -26,3 +26,4 @@ The repository keeps configurations for the following software:
 * zathura
 * sxiv
 * vim and neovim
+* Dunst (https://dunst-project.org/)
