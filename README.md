@@ -17,8 +17,9 @@ Add symbolic links in the appropriate location:
 Software
 --------
 
-The repository keeps configurations for the following software:
+The repository keeps configurations for at least the following software:
 
+* Emacs
 * zsh
 * i3
 * rofi
