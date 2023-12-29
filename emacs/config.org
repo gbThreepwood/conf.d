@@ -1,4 +1,32 @@
-* LSP-mode
+* Software development
+** Eglot
+Eglot (or Emacs Polyglot) is the built in package for LSP.
+#+begin_src emacs-lisp
+  (add-hook 'c-mode-hook 'eglot-ensure)
+  (add-hook 'c-ts-mode-hook 'eglot-ensure)
+  (add-hook 'c++-mode-hook 'eglot-ensure)
+  (add-hook 'c++-ts-mode-hook 'eglot-ensure)
+#+end_src
+** Yasnippet
+YASnippet is a template system for Emacs.
+#+begin_src emacs-lisp
+  (use-package yasnippet
+    :ensure t
+    :config
+    (use-package yasnippet-snippets
+      :ensure t)
+    (yas-reload-all))
+#+end_src
+** Flycheck
+Flycheck is a on-the-fly syntax chekcing tool.
+It is an alternative to the built in Flymake.
+#+begin_src emacs-lisp
+  (use-package flycheck
+  :ensure t
+  :init (global-flycheck-mode))
+  ;;(add-hook 'after-init-hook #'global-flycheck-mode)
+#+end_src
+** LSP-mode
 #+begin_src emacs-lisp
   ;; (setq package-selected-packages '(lsp-mode yasnippet lsp-treemacs helm-lsp
   ;;     projectile hydra flycheck company helm-xref dap-mode))
@@ -30,6 +58,33 @@
   ;;   (require 'dap-cpptools)
   ;;   (yas-global-mode))
 #+end_src
+
+** GNU Global
+** Magit
+#+begin_src emacs-lisp
+  (use-package magit
+    :ensure t
+    :config
+    (setq magit-push-always-verify 1)
+    (setq git-commit-summary-max-length 50)
+    :bind
+    ("M-g" . magit-status))
+#+end_src
+GNU global is a tool for source code tagging
+TODO: Install and configure
+* SPICE
+** Spice-mode
+A major mode for editing SPICE netlist files
+#+begin_src emacs-lisp
+  (use-package spice-mode
+    :ensure t)
+#+end_src
+** ob-spice
+org-babel function for SPICE evaluation
+#+begin_src emacs-lisp
+  (use-package ob-spice
+    :ensure t)
+#+end_src
 * Terminal
 ** Use ansi-term, and set defult shell to zsh
 #+BEGIN_SRC emacs-lisp
@@ -50,6 +105,11 @@ current .org file. I.e. it should temporaily replace
 your current window.
 #+begin_src emacs-lisp
   (setq org-src-window-setup 'current-window)
+#+end_src
+
+Set the default directory to store notes from the org capture utility.
+#+begin_src emacs-lisp
+  (setq org-default-notes-file (concat org-directory "/notes.org"))
 #+end_src
 
 ** Org mode templates
@@ -124,7 +184,7 @@ Show line number for both row and column in the modeline.
   (setq display-time-24hr-format t)
   (display-time-mode 1)
 #+end_src
-* Dashboard
+* Dashboard and project management
 #+begin_src emacs-lisp
   (use-package dashboard
     :ensure t
@@ -132,6 +192,15 @@ Show line number for both row and column in the modeline.
     (dashboard-setup-startup-hook)
     (setq dashboard-items '((recents . 10)))
     (setq dashboard-banner-logo-title "Novitech Emacs"))
+#+end_src
+
+** Projectile
+Use projectile for project management
+#+begin_src emacs-lisp
+  (use-package projectile
+    :ensure t
+    :init
+    (projectile-mode 1))
 #+end_src
 * Help tools
 
@@ -147,6 +216,14 @@ what any additional key will do.
 #+end_src
 
 * Text editing
+** Encoding
+#+begin_src emacs-lisp
+  (setq locale-coding-system 'utf-8)
+  (set-terminal-coding-system 'utf-8)
+  (set-keyboard-coding-system 'utf-8)
+  (set-selection-coding-system 'utf-8)
+  (prefer-coding-system 'utf-8)
+#+end_src
 ** Subword
 Treat each subword in a camel-cased word as separate words
 #+begin_src emacs-lisp
@@ -201,8 +278,32 @@ useful, but comment it out if it annoys you.
 	(point-at-eol)))))
   (keymap-global-set "C-c w l" 'copy-whole-line)
 #+end_src
+** Kill ring menu
+The popup-kill-ring package is old and not working too well
+#+begin_src emacs-lisp
+  ;; (use-package popup-kill-ring
+  ;;   :ensure t
+  ;;   :bind ("M-y" . popup-kill-ring))
+#+end_src
 
-* IDO
+Open a new window with a list of all items in the
+kill ring. Allows you to select which item you want
+to yank.
+#+begin_src emacs-lisp
+  (use-package browse-kill-ring
+    :ensure t
+    )
+#+end_src
+* IDO and Helm
+** Helm
+#+begin_src emacs-lisp
+  (use-package helm
+    :ensure t
+    :bind
+    ("C-x C-f" . 'helm-find-files)
+    ("C-x C-b" . 'helm-buffer-list)
+    ("M-x" . 'helm-M-x))
+#+end_src
 ** Enable IDO mode
 #+begin_src emacs-lisp
   (setq ido-enable-flex-matching nil)
@@ -212,15 +313,17 @@ useful, but comment it out if it annoys you.
 #+end_src
 
 ** IDO vertical
+Use Helm instead of IDO vertical
 #+begin_src emacs-lisp
-  (use-package ido-vertical-mode
-    :ensure t
-    :init
-    (ido-vertical-mode 1))
-  (setq ido-vertical-define-keys 'C-n-and-C-p-only)
+  ;; (use-package ido-vertical-mode
+  ;;   :ensure t
+  ;;   :init
+  ;;   (ido-vertical-mode 1))
+  ;; (setq ido-vertical-define-keys 'C-n-and-C-p-only)
 #+end_src
 
 ** SMEX
+SMEX - M-x enhancement built on top of Ido.
 #+begin_src emacs-lisp
   (use-package smex
     :ensure t
@@ -349,3 +452,57 @@ Colorize the delimiters to make them more easy to identify.
     :init
     (add-hook 'after-init-hook 'global-company-mode))
 #+end_src
+
+* Mode line
+** Spaceline
+#+begin_src emacs-lisp
+  (use-package spaceline
+    :ensure t
+    :config
+    (require 'spaceline-config)
+    (setq powerline-default-separator (quote arrow))
+    (spaceline-spacemacs-theme))
+#+end_src
+** Diminish
+#+begin_src emacs-lisp
+  (use-package diminish
+    :ensure t
+    :init
+    (diminish 'hungry-delete-mode)
+    (diminish 'beacon-mode)
+    (diminish 'which-key-mode)
+    (diminish 'subword-mode)
+    (diminish 'rainbow-mode)
+    (diminish 'yas-minor-mode))
+#+end_src
+
+* Dmenu
+#+begin_src emacs-lisp
+  (use-package dmenu
+    :ensure t
+    :bind
+    ("C-c d" . dmenu))
+#+end_src
+
+* Symon
+System monitor package which has not been updated in some years
+and did not work on my version of Emacs
+#+begin_src emacs-lisp
+  ;; (use-package symon
+  ;;   :ensure t
+  ;;   :bind
+  ;;   ("C-c s" . symon-mode))
+#+end_src
+
+* EXWM
+Emacs window manager.
+#+begin_src emacs-lisp
+  ;; (use-package exwm
+  ;;   :ensure t
+  ;;   :config
+  ;;   (require 'exwm-config)
+  ;;   (exwm-config-default))
+#+end_src
+
+* Multimedia
+TODO...
