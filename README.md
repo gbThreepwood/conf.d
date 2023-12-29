@@ -13,12 +13,19 @@ Add symbolic links in the appropriate location:
 
 **This overwrites any existing file**
 
+Caps Lock
+---------
+
+Use the caps-lock button for something slightly more useful.
+
+`setxkbmap -option 'ctrl:swapcaps'`
 
 Software
 --------
 
-The repository keeps configurations for the following software:
+The repository keeps configurations for at least the following software:
 
+* Emacs
 * zsh
 * i3
 * rofi
