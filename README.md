@@ -13,6 +13,12 @@ Add symbolic links in the appropriate location:
 
 **This overwrites any existing file**
 
+Caps Lock
+---------
+
+Use the caps-lock button for something slightly more useful.
+
+`setxkbmap -option 'ctrl:swapcaps'`
 
 Software
 --------
