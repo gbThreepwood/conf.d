@@ -1,3 +1,37 @@
+#+STARTUP: overview
+#+TITLE: Emacs oppsett
+#+CREATOR: Eirik Haustveit
+#+LANGUAGE: en
+#+OPTIONS: num:nil
+* Helper functions
+** package-vc-install
+The new (in 2022) package-vc-install function allows us to install
+packages directly from a remote repository. If a package is already
+installed (as will be the case the second time you open Emacs after
+adding a package using package-vc-install) it will prompt you to
+Overwrite the existing package. This is annoying.
+#+begin_src emacs-lisp
+;; Source: https://tony-zorman.com/posts/package-vc-install.html
+  (cl-defun novi/vc-install (&key (fetcher "github") repo name rev backend)
+    "Install a package from a remote if it's not already installed.
+  This is a thin wrapper around `package-vc-install' in order to
+  make non-interactive usage more ergonomic.  Takes the following
+  named arguments:
+
+  - FETCHER the remote where to get the package (e.g., \"gitlab\").
+    If omitted, this defaults to \"github\".
+
+  - REPO should be the name of the repository (e.g.,
+    \"slotThe/arXiv-citation\".
+
+  - NAME, REV, and BACKEND are as in `package-vc-install' (which
+    see)."
+    (let* ((url (format "https://www.%s.com/%s" fetcher repo))
+	   (iname (when name (intern name)))
+	   (pac-name (or iname (intern (file-name-base repo)))))
+      (unless (package-installed-p pac-name)
+	(package-vc-install url iname rev backend))))
+#+end_src
 * Software development
 ** Eglot
 Eglot (or Emacs Polyglot) is the built in package for LSP.
@@ -58,9 +92,8 @@ It is an alternative to the built in Flymake.
   ;;   (require 'dap-cpptools)
   ;;   (yas-global-mode))
 #+end_src
-
-** GNU Global
 ** Magit
+Magit is a tool for managing Git repositories.
 #+begin_src emacs-lisp
   (use-package magit
     :ensure t
@@ -70,8 +103,20 @@ It is an alternative to the built in Flymake.
     :bind
     ("M-g" . magit-status))
 #+end_src
+** GNU Global
 GNU global is a tool for source code tagging
 TODO: Install and configure
+** Kmonad
+Kmonad is a tool to extend the functionallity of your keyboard
+it is not an Emacs plugin, but here we add support for syntax
+highlighting the configuration files.
+#+begin_src emacs-lisp
+;;  (package-vc-install
+;;   '(kbd-mode . (:url "https://github.com/kmonad/kbd-mode")))
+  (use-package kbd-mode
+  :init (novi/vc-install :fetcher "github" :repo "kmonad/kbd-mode")
+  )
+#+end_src
 * SPICE
 ** Spice-mode
 A major mode for editing SPICE netlist files
@@ -96,8 +141,42 @@ org-babel function for SPICE evaluation
   ;;(global-set-key (kbd "<s-t>") 'ansi-term)
   (keymap-global-set "C-z" 'ansi-term)
 #+END_SRC
+* LaTeX
+** AUCTeX
+Is a part of Emacs.
+#+begin_src emacs-lisp
+  (setq TeX-auto-save t)
+  (setq TeX-parse-self t)
+  (setq-default TeX-master nil)
 
-* Org
+  ;; auto-fill-mode
+  (add-hook 'LaTeX-mode-hook 'visual-line-mode)
+  (add-hook 'LaTeX-mode-hook 'flyspell-mode)
+  (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
+  (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
+  (setq reftex-plug-into-AUCTeX t)
+
+  (setq TeX-PDF-mode t)
+#+end_src
+** RefTeX
+Is a part of Emacs. We want it enabled automatically for all LaTeX files.
+It is a package for support of labels, references, citations, and indices.
+#+begin_src emacs-lisp
+(add-hook 'LaTeX-mode-hook 'turn-on-reftex)   ; with AUCTeX LaTeX mode
+(add-hook 'latex-mode-hook 'turn-on-reftex)   ; with Emacs latex mode
+#+end_src
+** Citar
+Citar is used to browse and act on BibTeX, BibLaTeX, and CSL JSON bibliographic data.
+#+begin_src emacs-lisp
+  (use-package citar
+    :ensure t
+    :custom
+    (citar-bibliography '("~/bib/references.bib"))
+    :hook
+    (LaTeX-mode . citar-capf-setup)
+    (org-mode . citar-capf-setup))
+#+end_src
+* Org-mode
 ** Basic config
 When editing code blocks in org-mode (C-c ') the
 code editor should open in the same window as your
@@ -125,6 +204,20 @@ Set the default directory to store notes from the org capture utility.
     (add-hook 'org-mode-hook (lambda () (org-bullets-mode))))
 #+end_src
 
+** Export
+Syntax higlight in org-mode documents which are exported to HTML.
+#+begin_src emacs-lisp
+(use-package htmlize
+  :ensure t)
+#+end_src
+Settings for Org-mode
+* Searcing
+** Swiper
+#+begin_src emacs-lisp
+  (use-package swiper
+  :ensure t
+  :bind ("C-s" . swiper))
+#+end_src
 * Apperance
 ** Disable tool-bar, menu, etc
 #+BEGIN_SRC emacs-lisp
@@ -178,11 +271,35 @@ Show line number for both row and column in the modeline.
 #+begin_src emacs-lisp
   (line-number-mode 1)
   (column-number-mode 1)
+;;display-line-numbers-mode 1)
+#+end_src
+
+Show line numbers to the right when in programming mode
+
+#+begin_src emacs-lisp
+  ;; (use-package linum-relative
+  ;;   :ensure t
+  ;;   :config
+  ;;   (setq linum-relative-current-symbol "")
+  ;;   (add-hook 'prog-mode-hook 'linum-relative-mode))
 #+end_src
 ** Show the time
 #+begin_src emacs-lisp
   (setq display-time-24hr-format t)
   (display-time-mode 1)
+#+end_src
+** Scrollbar
+Sublimity scroll did not work too well...
+is there something wrong with the config?
+#+begin_src emacs-lisp
+;;  (use-package sublimity
+;;    :ensure t)
+    ;;:config
+    ;;(use-package sublimity-scroll
+    ;;  :ensure t))
+;;  (require 'sublimity-scroll)
+;;  (require 'sublimity-map)
+;;  (sublimity-mode 1)
 #+end_src
 * Dashboard and project management
 #+begin_src emacs-lisp
@@ -201,6 +318,129 @@ Use projectile for project management
     :ensure t
     :init
     (projectile-mode 1))
+#+end_src
+
+** Cmake project management
+#+begin_src emacs-lisp
+
+#+end_src
+
+** Treemacs
+#+begin_src emacs-lisp
+  (use-package treemacs
+    :ensure t
+    :defer t
+    :init
+    (with-eval-after-load 'winum
+      (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
+    :config
+    (progn
+      (setq treemacs-collapse-dirs                   (if treemacs-python-executable 3 0)
+	    treemacs-deferred-git-apply-delay        0.5
+	    treemacs-directory-name-transformer      #'identity
+	    treemacs-display-in-side-window          t
+	    treemacs-eldoc-display                   'simple
+	    treemacs-file-event-delay                2000
+	    treemacs-file-extension-regex            treemacs-last-period-regex-value
+	    treemacs-file-follow-delay               0.2
+	    treemacs-file-name-transformer           #'identity
+	    treemacs-follow-after-init               t
+	    treemacs-expand-after-init               t
+	    treemacs-find-workspace-method           'find-for-file-or-pick-first
+	    treemacs-git-command-pipe                ""
+	    treemacs-goto-tag-strategy               'refetch-index
+	    treemacs-header-scroll-indicators        '(nil . "^^^^^^")
+	    treemacs-hide-dot-git-directory          t
+	    treemacs-indentation                     2
+	    treemacs-indentation-string              " "
+	    treemacs-is-never-other-window           nil
+	    treemacs-max-git-entries                 5000
+	    treemacs-missing-project-action          'ask
+	    treemacs-move-forward-on-expand          nil
+	    treemacs-no-png-images                   nil
+	    treemacs-no-delete-other-windows         t
+	    treemacs-project-follow-cleanup          nil
+	    treemacs-persist-file                    (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
+	    treemacs-position                        'left
+	    treemacs-read-string-input               'from-child-frame
+	    treemacs-recenter-distance               0.1
+	    treemacs-recenter-after-file-follow      nil
+	    treemacs-recenter-after-tag-follow       nil
+	    treemacs-recenter-after-project-jump     'always
+	    treemacs-recenter-after-project-expand   'on-distance
+	    treemacs-litter-directories              '("/node_modules" "/.venv" "/.cask")
+	    treemacs-project-follow-into-home        nil
+	    treemacs-show-cursor                     nil
+	    treemacs-show-hidden-files               t
+	    treemacs-silent-filewatch                nil
+	    treemacs-silent-refresh                  nil
+	    treemacs-sorting                         'alphabetic-asc
+	    treemacs-select-when-already-in-treemacs 'move-back
+	    treemacs-space-between-root-nodes        t
+	    treemacs-tag-follow-cleanup              t
+	    treemacs-tag-follow-delay                1.5
+	    treemacs-text-scale                      nil
+	    treemacs-user-mode-line-format           nil
+	    treemacs-user-header-line-format         nil
+	    treemacs-wide-toggle-width               70
+	    treemacs-width                           35
+	    treemacs-width-increment                 1
+	    treemacs-width-is-initially-locked       t
+	    treemacs-workspace-switch-cleanup        nil)
+
+      ;; The default width and height of the icons is 22 pixels. If you are
+      ;; using a Hi-DPI display, uncomment this to double the icon size.
+      ;;(treemacs-resize-icons 44)
+
+      (treemacs-follow-mode t)
+      (treemacs-filewatch-mode t)
+      (treemacs-fringe-indicator-mode 'always)
+      (when treemacs-python-executable
+	(treemacs-git-commit-diff-mode t))
+
+      (pcase (cons (not (null (executable-find "git")))
+		   (not (null treemacs-python-executable)))
+	(`(t . t)
+	 (treemacs-git-mode 'deferred))
+	(`(t . _)
+	 (treemacs-git-mode 'simple)))
+
+      (treemacs-hide-gitignored-files-mode nil))
+    :bind
+    (:map global-map
+	  ("M-0"       . treemacs-select-window)
+	  ("C-x t 1"   . treemacs-delete-other-windows)
+	  ("C-x t t"   . treemacs)
+	  ("C-x t d"   . treemacs-select-directory)
+	  ("C-x t B"   . treemacs-bookmark)
+	  ("C-x t C-t" . treemacs-find-file)
+	  ("C-x t M-t" . treemacs-find-tag)))
+
+  ;(use-package treemacs-evil
+  ;  :after (treemacs evil)
+  ;  :ensure t)
+
+  (use-package treemacs-projectile
+    :after (treemacs projectile)
+    :ensure t)
+
+  (use-package treemacs-icons-dired
+    :hook (dired-mode . treemacs-icons-dired-enable-once)
+    :ensure t)
+
+  (use-package treemacs-magit
+    :after (treemacs magit)
+    :ensure t)
+
+  (use-package treemacs-persp ;;treemacs-perspective if you use perspective.el vs. persp-mode
+    :after (treemacs persp-mode) ;;or perspective vs. persp-mode
+    :ensure t
+    :config (treemacs-set-scope-type 'Perspectives))
+
+  (use-package treemacs-tab-bar ;;treemacs-tab-bar if you use tab-bar-mode
+    :after (treemacs)
+    :ensure t
+    :config (treemacs-set-scope-type 'Tabs))
 #+end_src
 * Help tools
 
@@ -294,22 +534,62 @@ to yank.
     :ensure t
     )
 #+end_src
+
+** Multiple cursors
+mark-multiple is no longer maintained, use multiple-cursors instead.
+Allows you to mark multiple occurances of the same text.
+#+begin_src emacs-lisp
+  (use-package multiple-cursors
+  :ensure t
+  :bind (("H-SPC" . set-rectangular-region-anchor)
+	 ("C-M-SPC" . set-rectangular-region-anchor)
+	 ("C->" . mc/mark-next-like-this)
+	 ("C-<" . mc/mark-previous-like-this)
+	 ("C-c C->" . mc/mark-all-like-this)
+	 ("C-c C-SPC" . mc/edit-lines)
+	 ))
+
+;;  (keymap-global-set "C-S-c C-S-c" 'mc/edit-lines)
+#+end_src
+** Expand region
+Allow you to quickly expand the region of selected text.
+#+begin_src emacs-lisp
+  (use-package expand-region
+  :ensure t
+  :bind ("C-q" . er/expand-region))
+#+end_src
 * IDO and Helm
 ** Helm
 #+begin_src emacs-lisp
   (use-package helm
-    :ensure t
-    :bind
-    ("C-x C-f" . 'helm-find-files)
-    ("C-x C-b" . 'helm-buffer-list)
-    ("M-x" . 'helm-M-x))
+	      :ensure t
+	      :bind
+	      ("C-x C-f" . 'helm-find-files)
+	      ("C-x C-b" . 'helm-buffer-list)
+	      ("M-x" . 'helm-M-x)
+      :config
+	(setq helm-autoresize-max-height 0
+	    helm-autoresize-min-height 40
+	    helm-M-x-fuzzy-match t
+	    helm-buffers-fuzzy-matching t
+	    helm-recentf-fuzzy-match t
+	    helm-semantic-fuzzy-match t
+	    helm-imenu-fuzzy-match t
+	    helm-split-window-in-side-p nil
+	    helm-move-to-line-cycle-in-source nil
+	    helm-ff-search-library-in-sexp t
+	    helm-scroll-amount 8 
+	    helm-echo-input-in-header-line t)
+      :init
+      (helm-mode 1))
 #+end_src
 ** Enable IDO mode
+Use Helm instead of IDO
 #+begin_src emacs-lisp
-  (setq ido-enable-flex-matching nil)
-  (setq ido-create-new-buffer 'always)
-  (setq ido-everywhere t)
-  (ido-mode 1)
+  ;; (setq ido-enable-flex-matching nil)
+  ;; (setq ido-create-new-buffer 'always)
+  ;; (setq ido-everywhere t)
+  ;; (ido-mode 1)
 #+end_src
 
 ** IDO vertical
@@ -325,23 +605,24 @@ Use Helm instead of IDO vertical
 ** SMEX
 SMEX - M-x enhancement built on top of Ido.
 #+begin_src emacs-lisp
-  (use-package smex
-    :ensure t
-    :init (smex-initialize)
-    :bind
-    ("M-x" . smex))
+  ;; (use-package smex
+  ;;   :ensure t
+  ;;   :init (smex-initialize)
+  ;;   :bind
+  ;;   ("M-x" . smex))
 #+end_src
 ** Switch buffer
 #+begin_src emacs-lisp
-  (keymap-global-set "C-x C-b" 'ido-switch-buffer)
+  ;;(keymap-global-set "C-x C-b" 'ido-switch-buffer)
 #+end_src
 
 * Buffers
 ** Enable ibuffer
 Enable a more convenient way to browse the available buffers
+Commented since we use Helm instead.
 #+begin_src emacs-lisp
-  (keymap-global-set "C-x b" 'ibuffer)
-  (setq ibuffer-expert t)
+;;  (keymap-global-set "C-x b" 'ibuffer)
+;;  (setq ibuffer-expert t)
 #+end_src
 ** Kill current buffer
 #+begin_src emacs-lisp
@@ -393,7 +674,8 @@ Display hex color codes in color
 #+begin_src emacs-lisp
   (use-package rainbow-mode
     :ensure t
-    :init (rainbow-mode 1))
+    :hook prog-mode)
+    ;;:init (add-hook 'prog-mode-hook 'rainbow-mode))
 #+end_src
 
 ** Rainbow delimiters
@@ -465,25 +747,18 @@ Colorize the delimiters to make them more easy to identify.
 #+end_src
 ** Diminish
 #+begin_src emacs-lisp
-  (use-package diminish
-    :ensure t
-    :init
-    (diminish 'hungry-delete-mode)
-    (diminish 'beacon-mode)
-    (diminish 'which-key-mode)
-    (diminish 'subword-mode)
-    (diminish 'rainbow-mode)
-    (diminish 'yas-minor-mode))
+      (use-package diminish
+	:ensure t
+	:init
+	(diminish 'hungry-delete-mode)
+	(diminish 'beacon-mode)
+	(diminish 'which-key-mode)
+	(diminish 'subword-mode)
+	(diminish 'rainbow-mode)
+	(diminish 'yas-minor-mode)
+	(diminish 'flycheck-mode)
+	(diminish 'eldoc-mode))
 #+end_src
-
-* Dmenu
-#+begin_src emacs-lisp
-  (use-package dmenu
-    :ensure t
-    :bind
-    ("C-c d" . dmenu))
-#+end_src
-
 * Symon
 System monitor package which has not been updated in some years
 and did not work on my version of Emacs
@@ -494,7 +769,7 @@ and did not work on my version of Emacs
   ;;   ("C-c s" . symon-mode))
 #+end_src
 
-* EXWM
+* Emax as window manager with EXWM
 Emacs window manager.
 #+begin_src emacs-lisp
   ;; (use-package exwm
@@ -502,6 +777,13 @@ Emacs window manager.
   ;;   :config
   ;;   (require 'exwm-config)
   ;;   (exwm-config-default))
+#+end_src
+** Dmenu
+#+begin_src emacs-lisp
+  (use-package dmenu
+    :ensure t
+    :bind
+    ("C-c d" . dmenu))
 #+end_src
 
 * Multimedia
