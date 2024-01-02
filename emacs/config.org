@@ -3,6 +3,12 @@
 #+CREATOR: Eirik Haustveit
 #+LANGUAGE: en
 #+OPTIONS: num:nil
+* Fundamental settings
+It is nice to have the Emacs server running so we can open files in the
+currently running Emacs session using =emacsclient=
+#+begin_src emacs-lisp
+(server-start)
+#+end_src
 * Helper functions
 ** package-vc-install
 The new (in 2022) package-vc-install function allows us to install
@@ -203,7 +209,6 @@ Set the default directory to store notes from the org capture utility.
     :config
     (add-hook 'org-mode-hook (lambda () (org-bullets-mode))))
 #+end_src
-
 ** Export
 Syntax higlight in org-mode documents which are exported to HTML.
 #+begin_src emacs-lisp
@@ -443,7 +448,6 @@ Use projectile for project management
     :config (treemacs-set-scope-type 'Tabs))
 #+end_src
 * Help tools
-
 ** Which key
 Display the available key combinations which are supported after
 a given key. E.g. after C-x a window will pop up which tells you
@@ -454,7 +458,6 @@ what any additional key will do.
     :init
     (which-key-mode))
 #+end_src
-
 * Text editing
 ** Encoding
 #+begin_src emacs-lisp
