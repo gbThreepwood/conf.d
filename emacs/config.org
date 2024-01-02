@@ -177,7 +177,7 @@ Citar is used to browse and act on BibTeX, BibLaTeX, and CSL JSON bibliographic 
     (org-mode . citar-capf-setup))
 #+end_src
 * Org-mode
-** Basic config
+** TODO Basic config
 When editing code blocks in org-mode (C-c ') the
 code editor should open in the same window as your
 current .org file. I.e. it should temporaily replace
@@ -186,11 +186,155 @@ your current window.
   (setq org-src-window-setup 'current-window)
 #+end_src
 
-Set the default directory to store notes from the org capture utility.
+Various configuration.
 #+begin_src emacs-lisp
-  (setq org-default-notes-file (concat org-directory "/notes.org"))
-#+end_src
+    ;; Set the directory to hold the agenda files
+    (setq org-agenda-files '("~/org"))
 
+    ;;Set the default directory to store notes from the org capture utility.
+    (setq org-default-notes-file (concat org-directory "/notes.org"))
+
+    ;; When a TODO is set to a done state, record a timestamp
+    (setq org-log-done 'time)
+
+    ;; Follow the links
+    (setq org-return-follows-link  t)
+
+    ;; Associate all org files with org mode
+    (add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
+
+    ;; Make the indentation look nicer
+    (add-hook 'org-mode-hook 'org-indent-mode)
+
+    ;; Hide the markers so you just see bold text as BOLD-TEXT and not *BOLD-TEXT*
+    (setq org-hide-emphasis-markers t)
+
+    ;; Wrap the lines in org mode so that things are easier to read
+    (add-hook 'org-mode-hook 'visual-line-mode)
+
+    ;; TODO states
+    (setq org-todo-keywords
+	'((sequence "TODO(t)" "PLANNING(p)" "IN-PROGRESS(i@/!)" "VERIFYING(v!)" "BLOCKED(b@)"  "|" "DONE(d!)" "OVERCOME(o@!)" "WONT-DO(w@/!)" )
+	  ))
+  
+  ;; TODO colors
+  (setq org-todo-keyword-faces
+	'(
+	  ("TODO" . (:foreground "GoldenRod" :weight bold))
+	  ("PLANNING" . (:foreground "DeepPink" :weight bold))
+	  ("IN-PROGRESS" . (:foreground "Cyan" :weight bold))
+	  ("VERIFYING" . (:foreground "DarkOrange" :weight bold))
+	  ("BLOCKED" . (:foreground "Red" :weight bold))
+	  ("DONE" . (:foreground "LimeGreen" :weight bold))
+	  ("OVERCOME" . (:foreground "LimeGreen" :weight bold))
+	  ("WONT-DO" . (:foreground "LimeGreen" :weight bold))
+	  ))
+  
+#+end_src
+** Shortcuts
+#+begin_src emacs-lisp
+;; Shortcuts for storing links, viewing the agenda, and starting a capture
+;;(define-key global-map "\C-cl" 'org-store-link)
+;;(define-key global-map "\C-ca" 'org-agenda)
+;;(define-key global-map "\C-cc" 'org-capture)
+#+end_src
+** Capture templates
+#+begin_src emacs-lisp
+  (setq org-capture-templates
+	'(    
+	  ("j" "Work Log Entry"
+	   entry (file+datetree "~/org/work-log.org")
+	   "* %?"
+	   :empty-lines 0)
+
+	  ("n" "Generic note"
+	 entry (file+headline "~/org/notes.org" "Random Notes")
+	 "** %?"
+	 :empty-lines 0)
+
+	  ("p" "Passwords and such"
+	   entry (file+headline "~/org/notes.org" "Passwrods and such")
+	   "** %?"
+	   :empty-lines 0)
+
+	  ("g" "General To-Do"
+	   entry (file+headline "~/org/todo.org" "General tasks")
+	   "* TODO [#B] %?\n:Created: %T\n "
+	   :empty-lines 0)
+
+	  ("c" "Code To-Do"
+	 entry (file+headline "~/org/todo.org" "Code Related Tasks")
+	 "* TODO [#B] %?\n:Created: %T\n%i\n%a\nProposed Solution: "
+	 :empty-lines 0)
+
+        ("m" "Meeting"
+         entry (file+datetree "~/org/meetings.org")
+         "* %? :meeting:%^g \n:Created: %T\n** Attendees\n*** \n** Notes\n** Action Items\n*** TODO [#A] "
+         :tree-type week
+         :clock-in t
+         :clock-resume t
+         :empty-lines 0)
+	  
+	))
+#+end_src
+** Tags
+#+begin_src emacs-lisp
+  ;; Tags
+  (setq org-tag-alist '(
+			;; Ticket types
+			(:startgroup . nil)
+			("@bug" . ?b)
+			("@feature" . ?u)
+			("@spike" . ?j)                      
+			(:endgroup . nil)
+
+			;; Ticket flags
+			("@write_future_ticket" . ?w)
+			("@emergency" . ?e)
+			("@research" . ?r)
+
+			;; Meeting types
+			(:startgroup . nil)
+			("big_sprint_review" . ?i)
+			("cents_sprint_retro" . ?n)
+			("dsu" . ?d)
+			("grooming" . ?g)
+			("sprint_retro" . ?s)
+			(:endgroup . nil)
+
+			;; Code TODOs tags
+			("QA" . ?q)
+			("backend" . ?k)
+			("broken_code" . ?c)
+			("frontend" . ?f)
+
+			;; Special tags
+			("CRITICAL" . ?x)
+			("obstacle" . ?o)
+
+			;; Meeting tags
+			("HR" . ?h)
+			("general" . ?l)
+			("meeting" . ?m)
+			("misc" . ?z)
+			("planning" . ?p)
+
+			;; Work Log Tags
+			("accomplishment" . ?a)
+			))
+
+;; Tag colors
+(setq org-tag-faces
+      '(
+        ("planning"  . (:foreground "mediumPurple1" :weight bold))
+        ("backend"   . (:foreground "royalblue1"    :weight bold))
+        ("frontend"  . (:foreground "forest green"  :weight bold))
+        ("QA"        . (:foreground "sienna"        :weight bold))
+        ("meeting"   . (:foreground "yellow1"       :weight bold))
+        ("CRITICAL"  . (:foreground "red1"          :weight bold))
+        )
+      )
+#+end_src
 ** Org mode templates
 #+begin_src emacs-lisp
   (add-to-list 'org-structure-template-alist
