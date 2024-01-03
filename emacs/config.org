@@ -183,7 +183,7 @@ Citar is used to browse and act on BibTeX, BibLaTeX, and CSL JSON bibliographic 
     (org-mode . citar-capf-setup))
 #+end_src
 * Org-mode
-** TODO Basic config
+** Basic config
 When editing code blocks in org-mode (C-c ') the
 code editor should open in the same window as your
 current .org file. I.e. it should temporaily replace
@@ -194,7 +194,7 @@ your current window.
 
 Various configuration.
 #+begin_src emacs-lisp
-    ;; Set the directory to hold the agenda files
+    ;; Set the directory to hold the agenda files. All files in folder should be included in agenda this way.
     (setq org-agenda-files '("~/org"))
 
     ;;Set the default directory to store notes from the org capture utility.
@@ -240,9 +240,9 @@ Various configuration.
 ** Shortcuts
 #+begin_src emacs-lisp
 ;; Shortcuts for storing links, viewing the agenda, and starting a capture
-;;(define-key global-map "\C-cl" 'org-store-link)
-;;(define-key global-map "\C-ca" 'org-agenda)
-;;(define-key global-map "\C-cc" 'org-capture)
+(define-key global-map "\C-cl" 'org-store-link)
+(define-key global-map "\C-ca" 'org-agenda)
+(define-key global-map "\C-cc" 'org-capture)
 #+end_src
 ** Capture templates
 #+begin_src emacs-lisp
