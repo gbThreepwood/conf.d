@@ -98,6 +98,17 @@ It is an alternative to the built in Flymake.
   ;;   (require 'dap-cpptools)
   ;;   (yas-global-mode))
 #+end_src
+** Format all the code
+Remember to install the required formatters, such as =astyle= and =shfmt=.
+#+begin_src emacs-lisp
+  (use-package format-all
+    :ensure t
+    :commands format-all-mode
+    :hook (prog-mode . format-all-mode)
+    :config
+    (setq-default format-all-formatters '(("C"     (astyle "--mode=c"))
+                                          ("Shell" (shfmt "-i" "4" "-ci")))))
+#+end_src
 ** Magit
 Magit is a tool for managing Git repositories.
 #+begin_src emacs-lisp
@@ -719,7 +730,7 @@ Allow you to quickly expand the region of selected text.
 #+begin_src emacs-lisp
   (use-package expand-region
   :ensure t
-  :bind ("C-q" . er/expand-region))
+  :bind ("C-c w q" . er/expand-region))
 #+end_src
 * IDO and Helm
 ** Helm
