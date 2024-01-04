@@ -4,10 +4,87 @@
 #+LANGUAGE: en
 #+OPTIONS: num:nil
 * Fundamental settings
+** Emacs server mode
 It is nice to have the Emacs server running so we can open files in the
 currently running Emacs session using =emacsclient=
 #+begin_src emacs-lisp
 (server-start)
+#+end_src
+** Disable tool-bar, menu, etc
+#+BEGIN_SRC emacs-lisp
+    (tool-bar-mode -1)
+    (menu-bar-mode -1)
+    (scroll-bar-mode -1)
+    (setq inhibit-startup-message t)
+#+END_SRC
+** Disable the bell sound
+#+begin_src emacs-lisp
+    ;; Disable bell
+    (setq ring-bell-function 'ignore)
+#+end_src
+** Pretty symbols
+#+begin_src emacs-lisp
+  ;; Replace some text by symbols, e.g. the text lambda by the symbol
+  ;; from the Greek alphabet
+  (when window-system (global-prettify-symbols-mode t))
+#+end_src
+** Line highlight
+#+begin_src emacs-lisp
+  ;; Highlight the line with the cursor, but not when running Emacs in a terminal
+  (when window-system (global-hl-line-mode t))
+#+end_src
+** Additional brief line highlight
+Briefly highlight the line with the cursor when you switch buffer
+#+begin_src emacs-lisp
+(use-package beacon
+  :ensure t
+  :init
+  (beacon-mode 1))
+#+end_src
+** Single letter confirmation instead of having to type yes or no
+#+begin_src emacs-lisp
+(defalias 'yes-or-no-p 'y-or-n-p)
+#+end_src
+** Backup files
+#+begin_src emacs-lisp
+  ;; Uncomment to disable backup file creation
+  ;;(setq make-backup-file nil)
+  ;;(setq auto-save-default nil)
+#+end_src
+** Line numbering
+*** Modeline line numbers
+Show line number for both row and column in the modeline.
+#+begin_src emacs-lisp
+  (line-number-mode 1)
+  (column-number-mode 1)
+;;display-line-numbers-mode 1)
+#+end_src
+*** Left hand line numbers
+Show line numbers to the right when in programming mode
+#+begin_src emacs-lisp
+  ;; (use-package linum-relative
+  ;;   :ensure t
+  ;;   :config
+  ;;   (setq linum-relative-current-symbol "")
+  ;;   (add-hook 'prog-mode-hook 'linum-relative-mode))
+#+end_src
+** Show the time
+#+begin_src emacs-lisp
+  (setq display-time-24hr-format t)
+  (display-time-mode 1)
+#+end_src
+** Scrollbar
+Sublimity scroll did not work too well...
+is there something wrong with the config?
+#+begin_src emacs-lisp
+;;  (use-package sublimity
+;;    :ensure t)
+    ;;:config
+    ;;(use-package sublimity-scroll
+    ;;  :ensure t))
+;;  (require 'sublimity-scroll)
+;;  (require 'sublimity-map)
+;;  (sublimity-mode 1)
 #+end_src
 * Helper functions
 ** package-vc-install
@@ -384,97 +461,156 @@ Syntax higlight in org-mode documents which are exported to HTML.
   :ensure t)
 #+end_src
 Settings for Org-mode
+** Agenda
+This section holds configuration for the org-mode agenda view.
+*** Custom agenda view
+#+begin_src emacs-lisp
+  ;; ;; Agenda View "d"
+  ;; (defun air-org-skip-subtree-if-priority (priority)
+  ;;   "Skip an agenda subtree if it has a priority of PRIORITY.
+
+  ;;   PRIORITY may be one of the characters ?A, ?B, or ?C."
+  ;;   (let ((subtree-end (save-excursion (org-end-of-subtree t)))
+  ;;         (pri-value (* 1000 (- org-lowest-priority priority)))
+  ;;         (pri-current (org-get-priority (thing-at-point 'line t))))
+  ;;     (if (= pri-value pri-current)
+  ;;         subtree-end
+  ;;       nil)))
+
+  ;; (setq org-agenda-skip-deadline-if-done t)
+
+  ;; (setq org-agenda-custom-commands
+  ;;       '(
+  ;;         ;; Daily Agenda & TODOs
+  ;;         ("d" "Daily agenda and all TODOs"
+
+  ;;          ;; Display items with priority A
+  ;;          ((tags "PRIORITY=\"A\""
+  ;;                 ((org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
+  ;;                  (org-agenda-overriding-header "High-priority unfinished tasks:")))
+
+  ;;           ;; View 7 days in the calendar view
+  ;;           (agenda "" ((org-agenda-span 7)))
+
+  ;;           ;; Display items with priority B (really it is view all items minus A & C)
+  ;;           (alltodo ""
+  ;;                    ((org-agenda-skip-function '(or (air-org-skip-subtree-if-priority ?A)
+  ;;                                                    (air-org-skip-subtree-if-priority ?C)
+  ;;                                                    (org-agenda-skip-if nil '(scheduled deadline))))
+  ;;                     (org-agenda-overriding-header "ALL normal priority tasks:")))
+
+  ;;           ;; Display items with pirority C
+  ;;           (tags "PRIORITY=\"C\""
+  ;;                 ((org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
+  ;;                  (org-agenda-overriding-header "Low-priority Unfinished tasks:")))
+  ;;           )
+
+  ;;          ;; Don't compress things (change to suite your tastes)
+  ;;          ((org-agenda-compact-blocks nil)))
+  ;;         ))
+#+end_src
+*** Super agenda
+org-super-agenda is a package for organization of the various agenda items in to categories.
+#+begin_src emacs-lisp
+      (use-package org-super-agenda
+      :ensure t
+:config (add-hook 'org-mode-hook (lambda () (org-super-agenda-mode))))
+
+    (setq org-agenda-custom-commands
+          '(
+            ;; Super View
+            ("j" "Super View"
+             (
+              (agenda ""
+                      (
+                       (org-agenda-remove-tags t)                                       
+                       (org-agenda-span 3)
+                       )
+                      )
+
+              (alltodo ""
+                       (
+                        ;; Remove tags to make the view cleaner
+                        (org-agenda-remove-tags t)
+                        (org-agenda-prefix-format "  %t  %s")                    
+                        (org-agenda-overriding-header "CURRENT STATUS")
+
+                        ;; Define the super agenda groups (sorts by order)
+                        (org-super-agenda-groups
+                         '(
+                           ;; Filter where tag is CRITICAL
+                           (:name "Critical Tasks"
+                                  :tag "CRITICAL"
+                                  :order 0
+                                  )
+                           ;; Filter where TODO state is IN-PROGRESS
+                           (:name "Currently Working"
+                                  :todo "IN-PROGRESS"
+                                  :order 1
+                                  )
+                           ;; Filter where TODO state is PLANNING
+                           (:name "Planning Next Steps"
+                                  :todo "PLANNING"
+                                  :order 2
+                                  )
+                           ;; Filter where TODO state is BLOCKED or where the tag is obstacle
+                           (:name "Problems & Blockers"
+                                  :todo "BLOCKED"
+                                  :tag "obstacle"                              
+                                  :order 3
+                                  )
+                           ;; Filter where tag is @write_future_ticket
+                           (:name "Tickets to Create"
+                                  :tag "@write_future_ticket"
+                                  :order 4
+                                  )
+                           ;; Filter where tag is @research
+                           (:name "Research Required"
+                                  :tag "@research"
+                                  :order 7
+                                  )
+                           ;; Filter where tag is meeting and priority is A (only want TODOs from meetings)
+                           (:name "Meeting Action Items"
+                                  :and (:tag "meeting" :priority "A")
+                                  :order 8
+                                  )
+                           ;; Filter where state is TODO and the priority is A and the tag is not meeting
+                           (:name "Other Important Items"
+                                  :and (:todo "TODO" :priority "A" :not (:tag "meeting"))
+                                  :order 9
+                                  )
+                           ;; Filter where state is TODO and priority is B
+                           (:name "General Backlog"
+                                  :and (:todo "TODO" :priority "B")
+                                  :order 10
+                                  )
+                           ;; Filter where the priority is C or less (supports future lower priorities)
+                           (:name "Non Critical"
+                                  :priority<= "C"
+                                  :order 11
+                                  )
+                           ;; Filter where TODO state is VERIFYING
+                           (:name "Currently Being Verified"
+                                  :todo "VERIFYING"
+                                  :order 20
+                                  )
+                           )
+                         )
+                        )
+                       )
+              ))
+            ))
+#+end_src
 * Searcing
 ** Swiper
+Ivy-enhanced alternative to Isearch.
 #+begin_src emacs-lisp
   (use-package swiper
   :ensure t
   :bind ("C-s" . swiper))
 #+end_src
-* Apperance
-** Disable tool-bar, menu, etc
-#+BEGIN_SRC emacs-lisp
-    (tool-bar-mode -1)
-    (menu-bar-mode -1)
-    (scroll-bar-mode -1)
-    (setq inhibit-startup-message t)
-#+END_SRC
-
-** Disable the bell sound
-#+begin_src emacs-lisp
-    ;; Disable bell
-    (setq ring-bell-function 'ignore)
-#+end_src
-
-** Pretty symbols
-#+begin_src emacs-lisp
-  ;; Replace some text by symbols, e.g. the text lambda by the symbol
-  ;; from the Greek alphabet
-  (when window-system (global-prettify-symbols-mode t))
-#+end_src
-
-** Line highlight
-#+begin_src emacs-lisp
-  ;; Highlight the line with the cursor, but not when running Emacs in a terminal
-  (when window-system (global-hl-line-mode t))
-#+end_src
-
-** Additional brief line highlight
-Briefly highlight the line with the cursor when you switch buffer
-#+begin_src emacs-lisp
-(use-package beacon
-  :ensure t
-  :init
-  (beacon-mode 1))
-#+end_src
-
-** Single letter confirmation instead of having to type yes or no
-#+begin_src emacs-lisp
-(defalias 'yes-or-no-p 'y-or-n-p)
-#+end_src
-
-** Backup files
-#+begin_src emacs-lisp
-  ;; Uncomment to disable backup file creation
-  ;;(setq make-backup-file nil)
-  ;;(setq auto-save-default nil)
-#+end_src
-** Line numbering
-Show line number for both row and column in the modeline.
-#+begin_src emacs-lisp
-  (line-number-mode 1)
-  (column-number-mode 1)
-;;display-line-numbers-mode 1)
-#+end_src
-
-Show line numbers to the right when in programming mode
-
-#+begin_src emacs-lisp
-  ;; (use-package linum-relative
-  ;;   :ensure t
-  ;;   :config
-  ;;   (setq linum-relative-current-symbol "")
-  ;;   (add-hook 'prog-mode-hook 'linum-relative-mode))
-#+end_src
-** Show the time
-#+begin_src emacs-lisp
-  (setq display-time-24hr-format t)
-  (display-time-mode 1)
-#+end_src
-** Scrollbar
-Sublimity scroll did not work too well...
-is there something wrong with the config?
-#+begin_src emacs-lisp
-;;  (use-package sublimity
-;;    :ensure t)
-    ;;:config
-    ;;(use-package sublimity-scroll
-    ;;  :ensure t))
-;;  (require 'sublimity-scroll)
-;;  (require 'sublimity-map)
-;;  (sublimity-mode 1)
-#+end_src
 * Dashboard and project management
+** Dashboard
 #+begin_src emacs-lisp
   (use-package dashboard
     :ensure t
@@ -483,7 +619,6 @@ is there something wrong with the config?
     (setq dashboard-items '((recents . 10)))
     (setq dashboard-banner-logo-title "Novitech Emacs"))
 #+end_src
-
 ** Projectile
 Use projectile for project management
 #+begin_src emacs-lisp
@@ -493,14 +628,11 @@ Use projectile for project management
         (projectile-mode 1))
 
   (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
-  
 #+end_src
-
 ** Cmake project management
 #+begin_src emacs-lisp
 
 #+end_src
-
 ** Treemacs
 #+begin_src emacs-lisp
   (use-package treemacs
@@ -643,7 +775,6 @@ Treat each subword in a camel-cased word as separate words
 #+begin_src emacs-lisp
   (global-subword-mode 1)
 #+end_src
-
 ** Electric
 For auto-complete of stuff (e.g. parentheses)
 I am not a big fan of this type of auto complete,
@@ -653,13 +784,10 @@ hence the code is commented out.
     ;;(electric-pair-mode t)
 #+end_src
 ** Scroll line by line when moving beyond the screen border
-
 #+begin_src emacs-lisp
   ;; Scroll line by line
   (setq scroll-conservatively 100)
-
 #+end_src
-
 ** Kill whole word
 By default Emacs does not kill a whole word, only
 from cursor position to the end, or beginning of
@@ -674,13 +802,13 @@ the word.
 #+end_src
 ** Hungry delete
 Delete whitespace in a hungry way. This is sometimes
-useful, but comment it out if it annoys you.
+useful, but comment it out if it annoys you. There is also a built in  hungry delete
+feature in enabled in some programming modes.
 #+begin_src emacs-lisp
-  (use-package hungry-delete
-    :ensure t
-    :config (global-hungry-delete-mode))
+;;  (use-package hungry-delete
+;;    :ensure t
+;;    :config (global-hungry-delete-mode))
 #+end_src
-
 ** Copy whole line
 #+begin_src emacs-lisp
   (defun copy-whole-line ()
@@ -703,10 +831,11 @@ The popup-kill-ring package is old and not working too well
 Open a new window with a list of all items in the
 kill ring. Allows you to select which item you want
 to yank.
+Commented since "Helm has build-in support for browsing the kill-ring when `helm-mode` is enabled."
 #+begin_src emacs-lisp
-  (use-package browse-kill-ring
-    :ensure t
-    )
+;;  (use-package browse-kill-ring
+;;    :ensure t
+;;    )
 #+end_src
 
 ** Multiple cursors
@@ -732,33 +861,45 @@ Allow you to quickly expand the region of selected text.
   :ensure t
   :bind ("C-c w q" . er/expand-region))
 #+end_src
+** Auto complete
+Company (CompleteAnything) is a package for auto-complete. In combination with Eglot it can get auto-complete when writing software.
+#+begin_src emacs-lisp
+  (use-package company
+    :ensure t
+    :init
+    (add-hook 'after-init-hook 'global-company-mode))
+#+end_src
 * IDO and Helm
 ** Helm
 #+begin_src emacs-lisp
   (use-package helm
-	      :ensure t
-	      :bind
-	      ("C-x C-f" . 'helm-find-files)
-	      ("C-x C-b" . 'helm-buffer-list)
-	      ("M-x" . 'helm-M-x)
+              :ensure t
+              :bind
+              ("C-x C-f" . 'helm-find-files)
+              ;;("C-x C-h" . 'helm-buffer-list)
+              ("M-x" . 'helm-M-x)
       :config
-	(setq helm-autoresize-max-height 0
-	    helm-autoresize-min-height 40
-	    helm-M-x-fuzzy-match t
-	    helm-buffers-fuzzy-matching t
-	    helm-recentf-fuzzy-match t
-	    helm-semantic-fuzzy-match t
-	    helm-imenu-fuzzy-match t
-	    helm-split-window-in-side-p nil
-	    helm-move-to-line-cycle-in-source nil
-	    helm-ff-search-library-in-sexp t
-	    helm-scroll-amount 8 
-	    helm-echo-input-in-header-line t)
+        (setq helm-autoresize-max-height 0
+            helm-autoresize-min-height 40
+            helm-M-x-fuzzy-match t
+            helm-buffers-fuzzy-matching t
+            helm-recentf-fuzzy-match t
+            helm-semantic-fuzzy-match t
+            helm-imenu-fuzzy-match t
+            helm-split-window-in-side-p nil
+            helm-move-to-line-cycle-in-source nil
+            helm-ff-search-library-in-sexp t
+            helm-scroll-amount 8 
+            helm-echo-input-in-header-line t)
       :init
       (helm-mode 1))
+  ;;(keymap-global-set "C-x C-m" 'helm-buffer-list)
 #+end_src
 ** Enable IDO mode
 Use Helm instead of IDO
+#+BEGIN_QUOTE
+To use Ido for some commands and Helm for others, do not enable ido-mode. Instead, customize helm-completing-read-handlers-alist to specify which command uses Ido.
+#+END_QUOTE
 #+begin_src emacs-lisp
   ;; (setq ido-enable-flex-matching nil)
   ;; (setq ido-create-new-buffer 'always)
@@ -789,16 +930,16 @@ SMEX - M-x enhancement built on top of Ido.
 #+begin_src emacs-lisp
   ;;(keymap-global-set "C-x C-b" 'ido-switch-buffer)
 #+end_src
-
 * Buffers
 ** Enable ibuffer
 Enable a more convenient way to browse the available buffers
-Commented since we use Helm instead.
+/Commented since we use Helm instead./
 #+begin_src emacs-lisp
 ;;  (keymap-global-set "C-x b" 'ibuffer)
 ;;  (setq ibuffer-expert t)
 #+end_src
 ** Kill current buffer
+Add command to kill current buffer.
 #+begin_src emacs-lisp
   (defun kill-current-buffer ()
     (interactive)
@@ -862,6 +1003,7 @@ Colorize the delimiters to make them more easy to identify.
 #+end_src
 * Windows
 ** Switch windows
+Show a shortcut key when you have more than two windows open, and what to switch window with C-x o
 #+begin_src emacs-lisp
   (use-package switch-window
     :ensure t
@@ -877,6 +1019,7 @@ Colorize the delimiters to make them more easy to identify.
 #+end_src
 
 ** Split window follow
+After you split the window it is nice if your cursor follows in to the new window.
 #+begin_src emacs-lisp
   (defun split-and-follow-horizontally ()
     (interactive)
@@ -901,16 +1044,9 @@ Colorize the delimiters to make them more easy to identify.
     :bind ("C-c s" . sudo-edit))
 #+end_src
 
-* Auto complete
-#+begin_src emacs-lisp
-  (use-package company
-    :ensure t
-    :init
-    (add-hook 'after-init-hook 'global-company-mode))
-#+end_src
-
 * Mode line
 ** Spaceline
+Spaceline is the modeline from spacemacs. We are not using the whole of spacemacs, but the mode line is nice.
 #+begin_src emacs-lisp
   (use-package spaceline
     :ensure t
@@ -920,6 +1056,7 @@ Colorize the delimiters to make them more easy to identify.
     (spaceline-spacemacs-theme))
 #+end_src
 ** Diminish
+Remove some minor modes from the mode line to make it less cluttered
 #+begin_src emacs-lisp
       (use-package diminish
 	:ensure t
@@ -933,16 +1070,6 @@ Colorize the delimiters to make them more easy to identify.
 	(diminish 'flycheck-mode)
 	(diminish 'eldoc-mode))
 #+end_src
-* Symon
-System monitor package which has not been updated in some years
-and did not work on my version of Emacs
-#+begin_src emacs-lisp
-  ;; (use-package symon
-  ;;   :ensure t
-  ;;   :bind
-  ;;   ("C-c s" . symon-mode))
-#+end_src
-
 * Emax as window manager with EXWM
 Emacs window manager.
 #+begin_src emacs-lisp
@@ -961,4 +1088,4 @@ Emacs window manager.
 #+end_src
 
 * Multimedia
-TODO...
+Emacs can be used as a music player. Not sure if I want to do that though.
