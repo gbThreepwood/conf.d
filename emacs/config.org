@@ -124,6 +124,21 @@ Eglot (or Emacs Polyglot) is the built in package for LSP.
   (add-hook 'c++-mode-hook 'eglot-ensure)
   (add-hook 'c++-ts-mode-hook 'eglot-ensure)
 #+end_src
+** Python
+*** General settings
+#+begin_src emacs-lisp
+(setq python-shell-interpreter "ipython"
+    python-shell-interpreter-args "-i --simple-prompt")
+#+end_src
+*** Elpy
+Elpy is a package for Python programming. Even though you have LSP (Eglot) enabled it is still
+convenient.
+#+begin_src emacs-lisp
+ (use-package elpy
+  :ensure t
+  :init
+  (elpy-enable))
+#+end_src
 ** Yasnippet
 YASnippet is a template system for Emacs.
 #+begin_src emacs-lisp
@@ -337,6 +352,101 @@ Various configuration.
 	  ("WONT-DO" . (:foreground "LimeGreen" :weight bold))
 	  ))
   
+#+end_src
+** Jupyter org-mode
+*** Conda
+Conda is a Emacs package for working with conda environments.
+**** TODO figure out why this does not work...
+#+begin_src emacs-lisp
+  ;;(use-package conda
+  ;;:ensure t)
+
+  (custom-set-variables
+ '(conda-anaconda-home "/usr/bin/conda/"))
+
+  ;;(require 'conda)
+  ;; if you want interactive shell support, include:
+  ;;(conda-env-initialize-interactive-shells)
+  ;; if you want eshell support, include:
+  ;;(conda-env-initialize-eshell)
+  ;; if you want auto-activation (see below for details), include:
+  ;;(conda-env-autoactivate-mode t)
+  ;; if you want to automatically activate a conda environment on the opening of a file:
+  ;;(add-to-hook 'find-file-hook (lambda () (when (bound-and-true-p conda-project-env-path)
+  ;;                                          (conda-env-activate-for-buffer))))
+
+    ;; (use-package conda
+    ;;   :ensure t
+    ;;   :config
+    ;;   (setq conda-anaconda-home (expand-file-name "~/software/conda/"))
+    ;;   (setq conda-env-home-directory (expand-file-name "~/software/conda/"))
+    ;;   (setq conda-env-subdirectory "envs"))
+
+    ;; (unless (getenv "CONDA_DEFAULT_ENV")
+    ;;   (conda-env-activate "base"))
+#+end_src
+*** Jupyter
+#+begin_src emacs-lisp
+(use-package jupyter
+  :ensure t)
+#+end_src
+** Presentations
+*** Org-present
+#+begin_src emacs-lisp
+  (use-package org-present
+  :ensure t)
+#+end_src
+*** Configuration
+#+begin_src emacs-lisp
+    ;; Install visual-fill-column
+    (unless (package-installed-p 'visual-fill-column)
+      (package-install 'visual-fill-column))
+
+    ;; Configure fill width
+    (setq visual-fill-column-width 110
+          visual-fill-column-center-text t)
+
+    (defun my/org-present-start ()
+  ;; Tweak font sizes
+  (setq-local face-remapping-alist '((default (:height 1.5) variable-pitch)
+                                     (header-line (:height 4.0) variable-pitch)
+                                     (org-document-title (:height 1.75) org-document-title)
+                                     (org-code (:height 1.55) org-code)
+                                     (org-verbatim (:height 1.55) org-verbatim)
+                                     (org-block (:height 1.25) org-block)
+                                     (org-block-begin-line (:height 0.7) org-block)))
+
+      ;; Center the presentation and wrap lines
+      (visual-fill-column-mode 1)
+      (visual-line-mode 1))
+
+    (defun my/org-present-end ()
+      ;; Reset font customizations
+  (setq-local face-remapping-alist '((default variable-pitch default)))
+  
+      ;; Stop centering the document
+      (visual-fill-column-mode 0)
+      (visual-line-mode 0))
+
+    ;; Register hooks with org-present
+    (add-hook 'org-present-mode-hook 'my/org-present-start)
+    (add-hook 'org-present-mode-quit-hook 'my/org-present-end)
+#+end_src
+** Babel
+#+begin_src emacs-lisp
+;; Do not require confirmation before evaluating code blocks
+  (setq org-confirm-babel-evaluate nil)
+#+end_src
+
+Load some languages
+#+begin_src emacs-lisp
+      (org-babel-do-load-languages
+       'org-babel-load-languages '((emacs-lisp . t)
+                                   (C . t)
+                                   (R . t)
+                                   (shell . t)
+                                   (python . t)
+                                   (jupyter . t)))
 #+end_src
 ** Shortcuts
 #+begin_src emacs-lisp
