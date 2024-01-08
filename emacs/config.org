@@ -13,7 +13,7 @@ currently running Emacs session using =emacsclient=
 ** Disable tool-bar, menu, etc
 #+BEGIN_SRC emacs-lisp
     (tool-bar-mode -1)
-    (menu-bar-mode -1)
+    (menu-bar-mode 1)
     (scroll-bar-mode -1)
     (setq inhibit-startup-message t)
 #+END_SRC
@@ -117,12 +117,20 @@ Overwrite the existing package. This is annoying.
 #+end_src
 * Software development
 ** Eglot
-Eglot (or Emacs Polyglot) is the built in package for LSP.
+Eglot (or Emacs Polyglot) is the built in package for LSP in Emacs.
 #+begin_src emacs-lisp
-  (add-hook 'c-mode-hook 'eglot-ensure)
-  (add-hook 'c-ts-mode-hook 'eglot-ensure)
-  (add-hook 'c++-mode-hook 'eglot-ensure)
-  (add-hook 'c++-ts-mode-hook 'eglot-ensure)
+  ;;(add-to-list 'eglot-server-programs '(rst-mode . ("esbonio")))
+  ;; For restructured text we would like to use esbonio.
+  ;;(add-to-list 'eglot-server-programs
+  ;;             `(rst-mode . (,(executable-find "python3") "-m" "esbonio")))
+
+  (add-hook 'rst-mode-hook 'eglot-ensure)
+
+  
+    (add-hook 'c-mode-hook 'eglot-ensure)
+    (add-hook 'c-ts-mode-hook 'eglot-ensure)
+    (add-hook 'c++-mode-hook 'eglot-ensure)
+    (add-hook 'c++-ts-mode-hook 'eglot-ensure)
 #+end_src
 ** Yasnippet
 YASnippet is a template system for Emacs.
@@ -250,20 +258,33 @@ org-babel function for SPICE evaluation
 #+END_SRC
 * LaTeX
 ** AUCTeX
-Is a part of Emacs.
+AUCTeX is a comprehensive customizable integrated environment for writing input files for TeX, LaTeX, ConTeXt, Texinfo, and docTeX using Emacs.
 #+begin_src emacs-lisp
-  (setq TeX-auto-save t)
-  (setq TeX-parse-self t)
-  (setq-default TeX-master nil)
+(use-package tex
+  :ensure auctex)
 
-  ;; auto-fill-mode
-  (add-hook 'LaTeX-mode-hook 'visual-line-mode)
-  (add-hook 'LaTeX-mode-hook 'flyspell-mode)
-  (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
-  (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
-  (setq reftex-plug-into-AUCTeX t)
+  
+    (setq TeX-auto-save t)
+    (setq TeX-parse-self t)
+    (setq-default TeX-master nil)
 
-  (setq TeX-PDF-mode t)
+    ;; auto-fill-mode
+    (add-hook 'LaTeX-mode-hook 'visual-line-mode)
+    (add-hook 'LaTeX-mode-hook 'flyspell-mode)
+    (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
+    (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
+
+  ;; Eglot can use the Digestif language server for auto-completion.
+  (add-hook 'LaTeX-mode-hook 'eglot-ensure)
+
+    (setq reftex-plug-into-AUCTeX t)
+
+    (setq TeX-PDF-mode t)
+
+    (setq TeX-view-program-selection
+        '((output-dvi "DVI Viewer")
+          (output-pdf "PDF Viewer")
+          (output-html "HTML Viewer")))
 #+end_src
 ** RefTeX
 Is a part of Emacs. We want it enabled automatically for all LaTeX files.
@@ -282,6 +303,12 @@ Citar is used to browse and act on BibTeX, BibLaTeX, and CSL JSON bibliographic 
     :hook
     (LaTeX-mode . citar-capf-setup)
     (org-mode . citar-capf-setup))
+#+end_src
+* Sphinx
+** Sphinx-mode
+#+begin_src emacs-lisp
+  (use-package sphinx-mode
+  :ensure t)
 #+end_src
 * Org-mode
 ** Basic config
@@ -336,7 +363,6 @@ Various configuration.
 	  ("OVERCOME" . (:foreground "LimeGreen" :weight bold))
 	  ("WONT-DO" . (:foreground "LimeGreen" :weight bold))
 	  ))
-  
 #+end_src
 ** Shortcuts
 #+begin_src emacs-lisp
@@ -601,6 +627,13 @@ org-super-agenda is a package for organization of the various agenda items in to
               ))
             ))
 #+end_src
+* Markdown
+#+begin_src emacs-lisp
+(use-package markdown-mode
+  :ensure t
+  :mode ("README\\.md\\'" . gfm-mode)
+  :init (setq markdown-command "multimarkdown"))
+#+end_src
 * Searcing
 ** Swiper
 Ivy-enhanced alternative to Isearch.
@@ -635,120 +668,125 @@ Use projectile for project management
 #+end_src
 ** Treemacs
 #+begin_src emacs-lisp
-  (use-package treemacs
-    :ensure t
-    :defer t
-    :init
-    (with-eval-after-load 'winum
-      (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
-    :config
-    (progn
-      (setq treemacs-collapse-dirs                   (if treemacs-python-executable 3 0)
-	    treemacs-deferred-git-apply-delay        0.5
-	    treemacs-directory-name-transformer      #'identity
-	    treemacs-display-in-side-window          t
-	    treemacs-eldoc-display                   'simple
-	    treemacs-file-event-delay                2000
-	    treemacs-file-extension-regex            treemacs-last-period-regex-value
-	    treemacs-file-follow-delay               0.2
-	    treemacs-file-name-transformer           #'identity
-	    treemacs-follow-after-init               t
-	    treemacs-expand-after-init               t
-	    treemacs-find-workspace-method           'find-for-file-or-pick-first
-	    treemacs-git-command-pipe                ""
-	    treemacs-goto-tag-strategy               'refetch-index
-	    treemacs-header-scroll-indicators        '(nil . "^^^^^^")
-	    treemacs-hide-dot-git-directory          t
-	    treemacs-indentation                     2
-	    treemacs-indentation-string              " "
-	    treemacs-is-never-other-window           nil
-	    treemacs-max-git-entries                 5000
-	    treemacs-missing-project-action          'ask
-	    treemacs-move-forward-on-expand          nil
-	    treemacs-no-png-images                   nil
-	    treemacs-no-delete-other-windows         t
-	    treemacs-project-follow-cleanup          nil
-	    treemacs-persist-file                    (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
-	    treemacs-position                        'left
-	    treemacs-read-string-input               'from-child-frame
-	    treemacs-recenter-distance               0.1
-	    treemacs-recenter-after-file-follow      nil
-	    treemacs-recenter-after-tag-follow       nil
-	    treemacs-recenter-after-project-jump     'always
-	    treemacs-recenter-after-project-expand   'on-distance
-	    treemacs-litter-directories              '("/node_modules" "/.venv" "/.cask")
-	    treemacs-project-follow-into-home        nil
-	    treemacs-show-cursor                     nil
-	    treemacs-show-hidden-files               t
-	    treemacs-silent-filewatch                nil
-	    treemacs-silent-refresh                  nil
-	    treemacs-sorting                         'alphabetic-asc
-	    treemacs-select-when-already-in-treemacs 'move-back
-	    treemacs-space-between-root-nodes        t
-	    treemacs-tag-follow-cleanup              t
-	    treemacs-tag-follow-delay                1.5
-	    treemacs-text-scale                      nil
-	    treemacs-user-mode-line-format           nil
-	    treemacs-user-header-line-format         nil
-	    treemacs-wide-toggle-width               70
-	    treemacs-width                           35
-	    treemacs-width-increment                 1
-	    treemacs-width-is-initially-locked       t
-	    treemacs-workspace-switch-cleanup        nil)
+    (use-package treemacs
+      :ensure t
+      :defer t
+      :init
+      (with-eval-after-load 'winum
+        (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
+      :config
+      (progn
+        (setq treemacs-collapse-dirs                   (if treemacs-python-executable 3 0)
+              treemacs-deferred-git-apply-delay        0.5
+              treemacs-directory-name-transformer      #'identity
+              treemacs-display-in-side-window          t
+              treemacs-eldoc-display                   'simple
+              treemacs-file-event-delay                2000
+              treemacs-file-extension-regex            treemacs-last-period-regex-value
+              treemacs-file-follow-delay               0.2
+              treemacs-file-name-transformer           #'identity
+              treemacs-follow-after-init               t
+              treemacs-expand-after-init               t
+              treemacs-find-workspace-method           'find-for-file-or-pick-first
+              treemacs-git-command-pipe                ""
+              treemacs-goto-tag-strategy               'refetch-index
+              treemacs-header-scroll-indicators        '(nil . "^^^^^^")
+              treemacs-hide-dot-git-directory          t
+              treemacs-indentation                     2
+              treemacs-indentation-string              " "
+              treemacs-is-never-other-window           nil
+              treemacs-max-git-entries                 5000
+              treemacs-missing-project-action          'ask
+              treemacs-move-forward-on-expand          nil
+              treemacs-no-png-images                   nil
+              treemacs-no-delete-other-windows         t
+              treemacs-project-follow-cleanup          nil
+              treemacs-persist-file                    (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
+              treemacs-position                        'left
+              treemacs-read-string-input               'from-child-frame
+              treemacs-recenter-distance               0.1
+              treemacs-recenter-after-file-follow      nil
+              treemacs-recenter-after-tag-follow       nil
+              treemacs-recenter-after-project-jump     'always
+              treemacs-recenter-after-project-expand   'on-distance
+              treemacs-litter-directories              '("/node_modules" "/.venv" "/.cask")
+              treemacs-project-follow-into-home        nil
+              treemacs-show-cursor                     nil
+              treemacs-show-hidden-files               t
+              treemacs-silent-filewatch                nil
+              treemacs-silent-refresh                  nil
+              treemacs-sorting                         'alphabetic-asc
+              treemacs-select-when-already-in-treemacs 'move-back
+              treemacs-space-between-root-nodes        t
+              treemacs-tag-follow-cleanup              t
+              treemacs-tag-follow-delay                1.5
+              treemacs-text-scale                      nil
+              treemacs-user-mode-line-format           nil
+              treemacs-user-header-line-format         nil
+              treemacs-wide-toggle-width               70
+              treemacs-width                           35
+              treemacs-width-increment                 1
+              treemacs-width-is-initially-locked       t
+              treemacs-workspace-switch-cleanup        nil)
 
-      ;; The default width and height of the icons is 22 pixels. If you are
-      ;; using a Hi-DPI display, uncomment this to double the icon size.
-      ;;(treemacs-resize-icons 44)
+        ;; The default width and height of the icons is 22 pixels. If you are
+        ;; using a Hi-DPI display, uncomment this to double the icon size.
+        ;;(treemacs-resize-icons 44)
 
-      (treemacs-follow-mode t)
-      (treemacs-filewatch-mode t)
-      (treemacs-fringe-indicator-mode 'always)
-      (when treemacs-python-executable
-	(treemacs-git-commit-diff-mode t))
+        (treemacs-follow-mode t)
+        (treemacs-filewatch-mode t)
+        (treemacs-fringe-indicator-mode 'always)
+        (when treemacs-python-executable
+          (treemacs-git-commit-diff-mode t))
 
-      (pcase (cons (not (null (executable-find "git")))
-		   (not (null treemacs-python-executable)))
-	(`(t . t)
-	 (treemacs-git-mode 'deferred))
-	(`(t . _)
-	 (treemacs-git-mode 'simple)))
+        (pcase (cons (not (null (executable-find "git")))
+                     (not (null treemacs-python-executable)))
+          (`(t . t)
+           (treemacs-git-mode 'deferred))
+          (`(t . _)
+           (treemacs-git-mode 'simple)))
 
-      (treemacs-hide-gitignored-files-mode nil))
-    :bind
-    (:map global-map
-	  ("M-0"       . treemacs-select-window)
-	  ("C-x t 1"   . treemacs-delete-other-windows)
-	  ("C-x t t"   . treemacs)
-	  ("C-x t d"   . treemacs-select-directory)
-	  ("C-x t B"   . treemacs-bookmark)
-	  ("C-x t C-t" . treemacs-find-file)
-	  ("C-x t M-t" . treemacs-find-tag)))
+        (treemacs-hide-gitignored-files-mode nil))
+      :bind
+      (:map global-map
+            ("M-0"       . treemacs-select-window)
+            ("C-x t 1"   . treemacs-delete-other-windows)
+            ("C-x t t"   . treemacs)
+            ("C-x t d"   . treemacs-select-directory)
+            ("C-x t B"   . treemacs-bookmark)
+            ("C-x t C-t" . treemacs-find-file)
+            ("C-x t M-t" . treemacs-find-tag)))
 
-  ;(use-package treemacs-evil
-  ;  :after (treemacs evil)
-  ;  :ensure t)
+  ;; Disable drag and drop in treemacs, as this feature only causes sorrow and despair when
+  ;; your files suddenly are moved to some random directory.
+  ;; TODO: Figure out why this is not working.
+;;(define-key treemacs-mode-map [drag-mouse-1] nil)
 
-  (use-package treemacs-projectile
-    :after (treemacs projectile)
-    :ensure t)
+    ;(use-package treemacs-evil
+    ;  :after (treemacs evil)
+    ;  :ensure t)
 
-  (use-package treemacs-icons-dired
-    :hook (dired-mode . treemacs-icons-dired-enable-once)
-    :ensure t)
+    (use-package treemacs-projectile
+      :after (treemacs projectile)
+      :ensure t)
 
-  (use-package treemacs-magit
-    :after (treemacs magit)
-    :ensure t)
+    (use-package treemacs-icons-dired
+      :hook (dired-mode . treemacs-icons-dired-enable-once)
+      :ensure t)
 
-  (use-package treemacs-persp ;;treemacs-perspective if you use perspective.el vs. persp-mode
-    :after (treemacs persp-mode) ;;or perspective vs. persp-mode
-    :ensure t
-    :config (treemacs-set-scope-type 'Perspectives))
+    (use-package treemacs-magit
+      :after (treemacs magit)
+      :ensure t)
 
-  (use-package treemacs-tab-bar ;;treemacs-tab-bar if you use tab-bar-mode
-    :after (treemacs)
-    :ensure t
-    :config (treemacs-set-scope-type 'Tabs))
+    (use-package treemacs-persp ;;treemacs-perspective if you use perspective.el vs. persp-mode
+      :after (treemacs persp-mode) ;;or perspective vs. persp-mode
+      :ensure t
+      :config (treemacs-set-scope-type 'Perspectives))
+
+    (use-package treemacs-tab-bar ;;treemacs-tab-bar if you use tab-bar-mode
+      :after (treemacs)
+      :ensure t
+      :config (treemacs-set-scope-type 'Tabs))
 #+end_src
 * Help tools
 ** Which key
@@ -861,13 +899,19 @@ Allow you to quickly expand the region of selected text.
   :ensure t
   :bind ("C-c w q" . er/expand-region))
 #+end_src
-** Auto complete
+** Company (Auto complete)
 Company (CompleteAnything) is a package for auto-complete. In combination with Eglot it can get auto-complete when writing software.
 #+begin_src emacs-lisp
   (use-package company
     :ensure t
     :init
     (add-hook 'after-init-hook 'global-company-mode))
+#+end_src
+*** Company box
+#+begin_src emacs-lisp
+  (use-package company-box
+  :ensure t
+    :hook (company-mode . company-box-mode))
 #+end_src
 * IDO and Helm
 ** Helm
