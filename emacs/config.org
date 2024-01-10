@@ -942,8 +942,9 @@ from cursor position to the end, or beginning of
 the word.
 #+begin_src emacs-lisp
   (defun kill-whole-word ()
+    "Kill a whole word even if cursor is in middle of the word."
     (interactive)
-    (forward-char 1)
+    (forward-char 2)
     (backward-word)
     (kill-word 1))
   (keymap-global-set "C-c w w" 'kill-whole-word)
