@@ -466,13 +466,17 @@ Conda is a Emacs package for working with conda environments.
 
 Load some languages
 #+begin_src emacs-lisp
-      (org-babel-do-load-languages
-       'org-babel-load-languages '((emacs-lisp . t)
-                                   (C . t)
-                                   (R . t)
-                                   (shell . t)
-                                   (python . t)
-                                   (jupyter . t)))
+  (org-babel-do-load-languages
+   'org-babel-load-languages '((emacs-lisp . t)
+                               (C . t) ;; This includes C, C++ and D.
+                               (R . t)
+                               (shell . t)
+                               (python . t)
+                               (jupyter . t)))
+#+end_src
+** Source-code listings
+#+begin_src emacs-lisp
+ (add-to-list 'org-src-lang-modes '("conf" . conf)) 
 #+end_src
 ** Shortcuts
 #+begin_src emacs-lisp
@@ -591,10 +595,27 @@ Load some languages
     (add-hook 'org-mode-hook (lambda () (org-bullets-mode))))
 #+end_src
 ** Export
-Syntax higlight in org-mode documents which are exported to HTML.
+Syntax higlight in Org-mode documents which are exported to HTML.
 #+begin_src emacs-lisp
 (use-package htmlize
   :ensure t)
+#+end_src
+Install ox-reveal for exporting Org-mode documents as reveal.js presentations.
+#+begin_src emacs-lisp
+;;  (use-package ox-reveal
+;;  :ensure t)
+;;  (setq org-reveal-root "file:///home/eirik/bin/reveal.js")
+#+end_src
+Install org-re-reveal (fork of org-reveal)
+#+begin_src emacs-lisp
+  (use-package org-re-reveal
+  :ensure t)
+  (setq org-re-reveal-root "file:///home/eirik/bin/reveal.js")
+#+end_src
+Configure additional export options for Org-mode.
+#+begin_src emacs-lisp
+  (require 'ox-md) ;; Markdown export
+  ;;(require 'ox-s5) ;; S5 presentation export
 #+end_src
 Settings for Org-mode
 ** Agenda
