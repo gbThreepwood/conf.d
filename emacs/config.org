@@ -1244,17 +1244,20 @@ Spaceline is the modeline from spacemacs. We are not using the whole of spacemac
 ** Diminish
 Remove some minor modes from the mode line to make it less cluttered
 #+begin_src emacs-lisp
-      (use-package diminish
-	:ensure t
-	:init
-	(diminish 'hungry-delete-mode)
-	(diminish 'beacon-mode)
-	(diminish 'which-key-mode)
-	(diminish 'subword-mode)
-	(diminish 'rainbow-mode)
-	(diminish 'yas-minor-mode)
-	(diminish 'flycheck-mode)
-	(diminish 'eldoc-mode))
+            (use-package diminish
+              :ensure t
+              :init
+              (diminish 'hungry-delete-mode)
+              (diminish 'beacon-mode)
+              (diminish 'which-key-mode)
+              (diminish 'subword-mode)
+              (diminish 'rainbow-mode)
+              (diminish 'yas-minor-mode)
+              (diminish 'flycheck-mode)
+              (diminish 'eldoc-mode)
+              (diminish 'helm-mode)
+              (diminish 'visual-line-mode)
+              (diminish 'company-box-mode))
 #+end_src
 * Emax as window manager with EXWM
 Emacs window manager.
