@@ -10,17 +10,21 @@ currently running Emacs session using =emacsclient=
 #+begin_src emacs-lisp
 (server-start)
 #+end_src
-** Disable tool-bar, menu, etc
+** Built in modes: tool-bar, menu, etc
 #+BEGIN_SRC emacs-lisp
-    (tool-bar-mode -1)
-    (menu-bar-mode 1)
-    (scroll-bar-mode -1)
-    (setq inhibit-startup-message t)
+  (tool-bar-mode -1)
+  (menu-bar-mode 1)
+  (scroll-bar-mode -1)
+
+  (tab-bar-mode 1)
+  (global-tab-line-mode -1)
+  (setq inhibit-startup-message t)
 #+END_SRC
-** Disable the bell sound
+** Disable some warnings
 #+begin_src emacs-lisp
-    ;; Disable bell
-    (setq ring-bell-function 'ignore)
+  ;; Disable bell
+  (setq ring-bell-function 'ignore)
+  (setq vc-follow-symlinks t) ;; Disable warning about following symbolic link to version controlled file.
 #+end_src
 ** Pretty symbols
 #+begin_src emacs-lisp
