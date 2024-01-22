@@ -94,6 +94,11 @@ is there something wrong with the config?
   ; If you want to create a file, visit that file with C-x C-f,
   ; then enter the text in that file's own buffer.")
 #+end_src
+** Improved key-bindings for builtin commands
+#+begin_src emacs-lisp
+;;  (keymap-global-set "S-C-<left>" 'shrink-window-horizontally)
+;;  (global-set-key (kbd "S-C-<left>") 'shrink-window-horizontally)
+#+end_src
 * Helper functions
 ** package-vc-install
 The new (in 2022) package-vc-install function allows us to install
