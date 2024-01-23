@@ -957,10 +957,10 @@ the built in project management, and thus I will stick with Projectile for now.
       :after (treemacs magit)
       :ensure t)
 
-    (use-package treemacs-persp ;;treemacs-perspective if you use perspective.el vs. persp-mode
-      :after (treemacs persp-mode) ;;or perspective vs. persp-mode
-      :ensure t
-      :config (treemacs-set-scope-type 'Perspectives))
+    ;;(use-package treemacs-persp ;;treemacs-perspective if you use perspective.el vs. persp-mode
+    ;;  :after (treemacs persp-mode) ;;or perspective vs. persp-mode
+    ;;  :ensure t
+    ;;  :config (treemacs-set-scope-type 'Perspectives))
 
     (use-package treemacs-tab-bar ;;treemacs-tab-bar if you use tab-bar-mode
       :after (treemacs)
@@ -1102,6 +1102,7 @@ Company (CompleteAnything) is a package for auto-complete. In combination with E
               ("C-x C-f" . 'helm-find-files)
               ;;("C-x C-h" . 'helm-buffer-list)
               ("M-x" . 'helm-M-x)
+              ("C-s" . 'helm-occur)
       :config
         (setq helm-autoresize-max-height 0
             helm-autoresize-min-height 40
