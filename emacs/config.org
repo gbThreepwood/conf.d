@@ -1130,7 +1130,6 @@ To use Ido for some commands and Helm for others, do not enable ido-mode. Instea
   ;; (setq ido-everywhere t)
   ;; (ido-mode 1)
 #+end_src
-
 ** IDO vertical
 Use Helm instead of IDO vertical
 #+begin_src emacs-lisp
@@ -1165,11 +1164,11 @@ Enable a more convenient way to browse the available buffers
 ** Kill current buffer
 Add command to kill current buffer.
 #+begin_src emacs-lisp
-  (defun kill-current-buffer ()
-    (interactive)
-    (save-buffer)
-    (kill-buffer (current-buffer)))
-  (keymap-global-set "C-x k" 'kill-current-buffer)
+    (defun kill-current-buffer ()
+      (interactive)
+      (save-buffer)
+      (kill-buffer (current-buffer)))
+  ;; (keymap-global-set "C-x k" 'kill-current-buffer)
 #+end_src
 ** Kill all buffers
 #+begin_src emacs-lisp
@@ -1241,7 +1240,6 @@ Show a shortcut key when you have more than two windows open, and what to switch
     :bind
     ([remap other-window] . switch-window))
 #+end_src
-
 ** Split window follow
 After you split the window it is nice if your cursor follows in to the new window.
 #+begin_src emacs-lisp
