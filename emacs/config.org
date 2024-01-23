@@ -786,11 +786,13 @@ org-super-agenda is a package for organization of the various agenda items in to
 #+end_src
 * Searcing
 ** Swiper
-Ivy-enhanced alternative to Isearch.
+Ivy-enhanced alternative to Isearch. It is wery good, but I use helm-occur instead.
+Another alternative is helm-swoop, which is a package external to the core of helm,
+but since helm-occur has been improved, there is not that much benefit from using it.
 #+begin_src emacs-lisp
-  (use-package swiper
-  :ensure t
-  :bind ("C-s" . swiper))
+  ;;(use-package swiper
+  ;;:ensure t
+  ;;:bind ("C-s" . swiper))
 #+end_src
 * Dashboard and project management
 ** Dashboard
@@ -803,7 +805,9 @@ Ivy-enhanced alternative to Isearch.
     (setq dashboard-banner-logo-title "Novitech Emacs"))
 #+end_src
 ** Projectile
-Use projectile for project management
+Projectile is a project management package. Emacs has built in project management now, and it
+is starting to obtain the same feature set as projectile. Still I have had some trouble with
+the built in project management, and thus I will stick with Projectile for now.
 #+begin_src emacs-lisp
       (use-package projectile
         :ensure t
