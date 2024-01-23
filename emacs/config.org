@@ -1115,9 +1115,10 @@ Company (CompleteAnything) is a package for auto-complete. In combination with E
             helm-move-to-line-cycle-in-source nil
             helm-ff-search-library-in-sexp t
             helm-scroll-amount 8 
-            helm-echo-input-in-header-line t)
-      :init
-      (helm-mode 1))
+            helm-echo-input-in-header-line t))
+
+  (helm-autoresize-mode 1)
+  (helm-mode 1)
   ;;(keymap-global-set "C-x C-m" 'helm-buffer-list)
 #+end_src
 ** Enable IDO mode
