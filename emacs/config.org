@@ -1234,7 +1234,50 @@ After you split the window it is nice if your cursor follows in to the new windo
     (other-window 1))
   (keymap-global-set "C-x 3" 'split-and-follow-vertically)
 #+end_src
-
+** Window resize
+Use M-x windresize, and then the arrow keys to resize the currently active window.
+#+begin_src emacs-lisp
+  (use-package windresize
+  :ensure t)
+#+end_src
+** Workspaces
+*** Perspective
+#+begin_src emacs-lisp
+  ;; (use-package perspective
+  ;;   :ensure t
+  ;;   :bind (("C-M-k" . persp-switch)
+  ;;          ("C-M-n" . persp-next)
+  ;;          ("C-x k" . persp-kill-buffer*)
+  ;;          ;;("C-x C-b" . persp-list-buffers)
+  ;;          )
+  ;;   :custom
+  ;;   (persp-initial-frame-name "Main")
+  ;;   (persp-mode-prefix-key (kbd "C-c M-p"))  ; 
+  ;;   :config
+  ;;   ;; Running `persp-mode' multiple times resets the perspective list...
+  ;;   (unless (equal persp-mode t)
+  ;;     (persp-mode)))
+#+end_src
+*** Tabspaces
+Allows us to "create buffer-isolated workspaces (or “tabspaces”) that also integrate with your version-controlled projects"
+#+begin_src emacs-lisp
+  ;; (use-package tabspaces
+  ;;   ;; use this next line only if you also use straight, otherwise ignore it. 
+  ;;   ;; :straight (:type git :host github :repo "mclear-tools/tabspaces")
+  ;;   :hook (after-init . tabspaces-mode) ;; use this only if you want the minor-mode loaded at startup. 
+  ;;   :commands (tabspaces-switch-or-create-workspace
+  ;;              tabspaces-open-or-create-project-and-workspace)
+  ;;   :custom
+  ;;   (tabspaces-use-filtered-buffers-as-default t)
+  ;;   (tabspaces-default-tab "Default")
+  ;;   (tabspaces-remove-to-default t)
+  ;;   (tabspaces-include-buffers '("*scratch*"))
+  ;;   (tabspaces-initialize-project-with-todo t)
+  ;;   (tabspaces-todo-file-name "project-todo.org")
+  ;;   ;; sessions
+  ;;   (tabspaces-session t)
+  ;;   (tabspaces-session-auto-restore t))
+#+end_src
 * Admin tools
 ** sudo edit
 #+begin_src emacs-lisp
