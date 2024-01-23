@@ -289,34 +289,59 @@ org-babel function for SPICE evaluation
   (keymap-global-set "C-z" 'ansi-term)
 #+END_SRC
 * LaTeX
+** PDF-viewer
+pdf-tools allows inline viewing of pdf files which is nice when we are e.g. working on LaTeX document.
+You have to run =pdf-tools-install= for it to work, after you have installed the package.
+#+begin_src emacs-lisp
+  (use-package pdf-tools
+  :ensure t)
+
+  (pdf-tools-install)  ; Standard activation command
+  ;;(pdf-loader-install) ; On demand loading, leads to faster startup time
+#+end_src
 ** AUCTeX
 AUCTeX is a comprehensive customizable integrated environment for writing input files for TeX, LaTeX, ConTeXt, Texinfo, and docTeX using Emacs.
 #+begin_src emacs-lisp
-(use-package tex
-  :ensure auctex)
+    (use-package tex
+      :ensure auctex)
 
-  
-    (setq TeX-auto-save t)
-    (setq TeX-parse-self t)
-    (setq-default TeX-master nil)
+        (setq TeX-auto-save t)
+        (setq TeX-parse-self t)
+        (setq-default TeX-master nil)
 
-    ;; auto-fill-mode
-    (add-hook 'LaTeX-mode-hook 'visual-line-mode)
-    (add-hook 'LaTeX-mode-hook 'flyspell-mode)
-    (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
-    (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
+        ;; auto-fill-mode
+        (add-hook 'LaTeX-mode-hook 'visual-line-mode)
+        (add-hook 'LaTeX-mode-hook 'flyspell-mode)
+        (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
+        (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
 
-  ;; Eglot can use the Digestif language server for auto-completion.
-  (add-hook 'LaTeX-mode-hook 'eglot-ensure)
+      ;; Eglot can use the Digestif language server for auto-completion.
+      (add-hook 'LaTeX-mode-hook 'eglot-ensure)
 
-    (setq reftex-plug-into-AUCTeX t)
+        (setq reftex-plug-into-AUCTeX t)
 
-    (setq TeX-PDF-mode t)
+        (setq TeX-PDF-mode t)
 
+  ;; use pdf-tools as viewing program
     (setq TeX-view-program-selection
-        '((output-dvi "DVI Viewer")
-          (output-pdf "PDF Viewer")
-          (output-html "HTML Viewer")))
+          '( (output-pdf "PDF Tools")))
+
+
+        ;;(setq TeX-view-program-selection
+        ;;    '((output-dvi "DVI Viewer")
+        ;;      (output-pdf "PDF Viewer")
+        ;;      (output-html "HTML Viewer")))
+
+  (setq-default preview-scale-function 1.2)
+  (setq-default TeX-master nil) ; Query for master file upon compilation command.
+
+  ;; Method for forward and reverse search (between LaTeX code and PDF)
+  (setq TeX-source-correlate-method 'synctex)
+  
+  ;; Use synctex so we can jump back and forth between the PDF and the LaTeX source
+  ;; Use shell-escape so the latex source can execute external programs, be sure to
+  ;; not run any random code from the web before you have read it!!
+  (setq TeX-command-extra-options "--shell-escape --synctex=1")
 #+end_src
 ** RefTeX
 Is a part of Emacs. We want it enabled automatically for all LaTeX files.
