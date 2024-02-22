@@ -425,6 +425,22 @@ Various configuration.
 	  ("WONT-DO" . (:foreground "LimeGreen" :weight bold))
 	  ))
 #+end_src
+** Calender
+#+begin_src emacs-lisp
+(setq calendar-week-start-day 1)
+
+(setq calendar-intermonth-text
+      '(propertize
+        (format "%2d"
+                (car
+                 (calendar-iso-from-absolute
+                  (calendar-absolute-from-gregorian (list month day year)))))
+        'font-lock-face 'font-lock-warning-face))
+
+(setq calendar-intermonth-header
+      (propertize "Wk"
+                  'font-lock-face 'font-lock-keyword-face))
+#+end_src
 ** Jupyter org-mode
 *** Conda
 Conda is a Emacs package for working with conda environments.
