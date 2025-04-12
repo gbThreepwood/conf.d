@@ -3,7 +3,7 @@ conf.d
 
 Various configuration files and scripts.
 
-Clone the repository:
+Clone the repository to your home directory:
 
 `git clone https://github.com/gbThreepwood/conf.d.git`
 
