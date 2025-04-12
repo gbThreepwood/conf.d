@@ -1,0 +1,1381 @@
+#+STARTUP: overview
+#+TITLE: Emacs oppsett
+#+CREATOR: Eirik Haustveit
+#+LANGUAGE: en
+#+OPTIONS: num:nil
+* Fundamental settings
+** Emacs server mode
+It is nice to have the Emacs server running so we can open files in the
+currently running Emacs session using =emacsclient=
+#+begin_src emacs-lisp
+(server-start)
+#+end_src
+** Built in modes: tool-bar, menu, etc
+#+BEGIN_SRC emacs-lisp
+  (tool-bar-mode -1)
+  (menu-bar-mode 1)
+  (scroll-bar-mode -1)
+
+  (tab-bar-mode 1)
+  (global-tab-line-mode -1)
+  (setq inhibit-startup-message t)
+#+END_SRC
+** Disable some warnings
+#+begin_src emacs-lisp
+  ;; Disable bell
+  (setq ring-bell-function 'ignore)
+  (setq vc-follow-symlinks t) ;; Disable warning about following symbolic link to version controlled file.
+#+end_src
+** Pretty symbols
+#+begin_src emacs-lisp
+  ;; Replace some text by symbols, e.g. the text lambda by the symbol
+  ;; from the Greek alphabet
+  (when window-system (global-prettify-symbols-mode t))
+#+end_src
+** Line highlight
+#+begin_src emacs-lisp
+  ;; Highlight the line with the cursor, but not when running Emacs in a terminal
+  (when window-system (global-hl-line-mode t))
+#+end_src
+** Additional brief line highlight
+Briefly highlight the line with the cursor when you switch buffer
+#+begin_src emacs-lisp
+(use-package beacon
+  :ensure t
+  :init
+  (beacon-mode 1))
+#+end_src
+** Single letter confirmation instead of having to type yes or no
+#+begin_src emacs-lisp
+(defalias 'yes-or-no-p 'y-or-n-p)
+#+end_src
+** Backup files
+#+begin_src emacs-lisp
+  ;; Uncomment to disable backup file creation
+  ;;(setq make-backup-file nil)
+  ;;(setq auto-save-default nil)
+#+end_src
+** Line numbering
+*** Modeline line numbers
+Show line number for both row and column in the modeline.
+#+begin_src emacs-lisp
+  (line-number-mode 1)
+  (column-number-mode 1)
+;;display-line-numbers-mode 1)
+#+end_src
+*** Left hand line numbers
+Show line numbers to the right when in programming mode
+#+begin_src emacs-lisp
+  ;; (use-package linum-relative
+  ;;   :ensure t
+  ;;   :config
+  ;;   (setq linum-relative-current-symbol "")
+  ;;   (add-hook 'prog-mode-hook 'linum-relative-mode))
+#+end_src
+** Show the time
+#+begin_src emacs-lisp
+  (setq display-time-24hr-format t)
+  (display-time-mode 1)
+#+end_src
+** Scrollbar
+Sublimity scroll did not work too well...
+is there something wrong with the config?
+#+begin_src emacs-lisp
+;;  (use-package sublimity
+;;    :ensure t)
+    ;;:config
+    ;;(use-package sublimity-scroll
+    ;;  :ensure t))
+;;  (require 'sublimity-scroll)
+;;  (require 'sublimity-map)
+;;  (sublimity-mode 1)
+#+end_src
+** Scratch buffer
+#+begin_src emacs-lisp
+(setq initial-scratch-message nil)
+;  (setq initial-scratch-message "\
+  ; This buffer is for notes you don't want to save, and for elisp code.
+  ; If you want to create a file, visit that file with C-x C-f,
+  ; then enter the text in that file's own buffer.")
+#+end_src
+** Improved key-bindings for builtin commands
+#+begin_src emacs-lisp
+;;  (keymap-global-set "S-C-<left>" 'shrink-window-horizontally)
+;;  (global-set-key (kbd "S-C-<left>") 'shrink-window-horizontally)
+#+end_src
+* Helper functions
+** package-vc-install
+The new (in 2022) package-vc-install function allows us to install
+packages directly from a remote repository. If a package is already
+installed (as will be the case the second time you open Emacs after
+adding a package using package-vc-install) it will prompt you to
+Overwrite the existing package. This is annoying.
+#+begin_src emacs-lisp
+;; Source: https://tony-zorman.com/posts/package-vc-install.html
+  (cl-defun novi/vc-install (&key (fetcher "github") repo name rev backend)
+    "Install a package from a remote if it's not already installed.
+  This is a thin wrapper around `package-vc-install' in order to
+  make non-interactive usage more ergonomic.  Takes the following
+  named arguments:
+
+  - FETCHER the remote where to get the package (e.g., \"gitlab\").
+    If omitted, this defaults to \"github\".
+
+  - REPO should be the name of the repository (e.g.,
+    \"slotThe/arXiv-citation\".
+
+  - NAME, REV, and BACKEND are as in `package-vc-install' (which
+    see)."
+    (let* ((url (format "https://www.%s.com/%s" fetcher repo))
+	   (iname (when name (intern name)))
+	   (pac-name (or iname (intern (file-name-base repo)))))
+      (unless (package-installed-p pac-name)
+	(package-vc-install url iname rev backend))))
+#+end_src
+* Software development
+** Eglot
+Eglot (or Emacs Polyglot) is the built in package for LSP in Emacs.
+#+begin_src emacs-lisp
+  ;;(add-to-list 'eglot-server-programs '(rst-mode . ("esbonio")))
+  ;; For restructured text we would like to use esbonio.
+  ;;(add-to-list 'eglot-server-programs
+  ;;             `(rst-mode . (,(executable-find "python3") "-m" "esbonio")))
+
+  (add-hook 'rst-mode-hook 'eglot-ensure)
+
+  
+    (add-hook 'c-mode-hook 'eglot-ensure)
+    (add-hook 'c-ts-mode-hook 'eglot-ensure)
+    (add-hook 'c++-mode-hook 'eglot-ensure)
+    (add-hook 'c++-ts-mode-hook 'eglot-ensure)
+#+end_src
+** Python
+*** General settings
+#+begin_src emacs-lisp
+(setq python-shell-interpreter "ipython"
+    python-shell-interpreter-args "-i --simple-prompt")
+#+end_src
+*** Elpy
+Elpy is a package for Python programming. Even though you have LSP (Eglot) enabled it is still
+convenient.
+#+begin_src emacs-lisp
+ (use-package elpy
+  :ensure t
+  :init
+  (elpy-enable))
+#+end_src
+** Yasnippet
+YASnippet is a template system for Emacs.
+#+begin_src emacs-lisp
+  (use-package yasnippet
+    :ensure t
+    :config
+    (use-package yasnippet-snippets
+      :ensure t)
+    (yas-reload-all))
+#+end_src
+** Flycheck
+Flycheck is a on-the-fly syntax chekcing tool.
+It is an alternative to the built in Flymake.
+#+begin_src emacs-lisp
+  ;;(use-package flycheck
+  ;;:ensure t
+  ;;:init (global-flycheck-mode))
+  ;;(add-hook 'after-init-hook #'global-flycheck-mode)
+#+end_src
+** LSP-mode
+#+begin_src emacs-lisp
+  ;; (setq package-selected-packages '(lsp-mode yasnippet lsp-treemacs helm-lsp
+  ;;     projectile hydra flycheck company helm-xref dap-mode))
+
+  ;; (when (cl-find-if-not #'package-installed-p package-selected-packages)
+  ;;   (package-refresh-contents)
+  ;;   (mapc #'package-install package-selected-packages))
+
+  ;; ;; sample `helm' configuration use https://github.com/emacs-helm/helm/ for details
+  ;; (helm-mode)
+  ;; (require 'helm-xref)
+  ;; (define-key global-map [remap find-file] #'helm-find-files)
+  ;; (define-key global-map [remap execute-extended-command] #'helm-M-x)
+  ;; (define-key global-map [remap switch-to-buffer] #'helm-mini)
+
+  ;; (which-key-mode)
+  ;; (add-hook 'c-mode-hook 'lsp)
+  ;; (add-hook 'c++-mode-hook 'lsp)
+
+  ;; (setq gc-cons-threshold (* 100 1024 1024)
+  ;;       read-process-output-max (* 1024 1024)
+  ;;       treemacs-space-between-root-nodes nil
+  ;;       company-idle-delay 0.0
+  ;;       company-minimum-prefix-length 1
+  ;;       lsp-idle-delay 0.1)  ;; clangd is fast
+
+  ;; (with-eval-after-load 'lsp-mode
+  ;;   (add-hook 'lsp-mode-hook #'lsp-enable-which-key-integration)
+  ;;   (require 'dap-cpptools)
+  ;;   (yas-global-mode))
+#+end_src
+** Format all the code
+Remember to install the required formatters, such as =astyle= and =shfmt=.
+#+begin_src emacs-lisp
+  (use-package format-all
+    :ensure t
+    :commands format-all-mode
+    :hook (prog-mode . format-all-mode)
+    :config
+    (setq-default format-all-formatters '(("C"     (astyle "--mode=c"))
+                                          ("Shell" (shfmt "-i" "4" "-ci")))))
+#+end_src
+** Magit
+Magit is a tool for managing Git repositories.
+#+begin_src emacs-lisp
+  (use-package magit
+    :ensure t
+    :config
+    (setq magit-push-always-verify 1)
+    (setq git-commit-summary-max-length 50)
+    :bind
+    ("M-g" . magit-status))
+#+end_src
+** GNU Global
+GNU global is a tool for source code tagging
+TODO: Install and configure
+** Kmonad
+Kmonad is a tool to extend the functionallity of your keyboard
+it is not an Emacs plugin, but here we add support for syntax
+highlighting the configuration files.
+#+begin_src emacs-lisp
+;;  (package-vc-install
+;;   '(kbd-mode . (:url "https://github.com/kmonad/kbd-mode")))
+  (use-package kbd-mode
+  :init (novi/vc-install :fetcher "github" :repo "kmonad/kbd-mode")
+  )
+#+end_src
+** PlatformIO
+#+begin_src emacs-lisp
+    (use-package platformio-mode
+    :ensure t
+    )
+  
+  (require 'platformio-mode)
+  ;; Enable ccls for all c++ files, and platformio-mode only
+  ;; when needed (platformio.ini present in project root).
+  (add-hook 'c++-mode-hook (lambda ()
+                             (lsp-deferred)
+                             (platformio-conditionally-enable)))
+#+end_src
+* SPICE
+** Spice-mode
+A major mode for editing SPICE netlist files
+#+begin_src emacs-lisp
+  (use-package spice-mode
+    :ensure t)
+#+end_src
+** ob-spice
+org-babel function for SPICE evaluation
+#+begin_src emacs-lisp
+  (use-package ob-spice
+    :ensure t)
+#+end_src
+* Terminal
+** Use ansi-term, and set defult shell to zsh
+#+BEGIN_SRC emacs-lisp
+  (defvar def-term-shell "/usr/bin/zsh")
+  (defadvice ansi-term (before force-bash)
+    (interactive (list def-term-shell)))
+  (ad-activate 'ansi-term)
+
+  ;;(global-set-key (kbd "<s-t>") 'ansi-term)
+  (keymap-global-set "C-z" 'ansi-term)
+#+END_SRC
+* LaTeX
+** PDF-viewer
+pdf-tools allows inline viewing of pdf files which is nice when we are e.g. working on LaTeX document.
+You have to run =pdf-tools-install= for it to work, after you have installed the package.
+#+begin_src emacs-lisp
+  (use-package pdf-tools
+  :ensure t)
+
+  (pdf-tools-install)  ; Standard activation command
+  ;;(pdf-loader-install) ; Alternative on demand loading, leads to faster startup time
+#+end_src
+** AUCTeX
+AUCTeX is a comprehensive customizable integrated environment for writing input files for TeX, LaTeX, ConTeXt, Texinfo, and docTeX using Emacs.
+#+begin_src emacs-lisp
+    (use-package tex
+      :ensure auctex)
+
+        (setq TeX-auto-save t)
+        (setq TeX-parse-self t)
+        (setq-default TeX-master nil)
+
+        ;; auto-fill-mode
+        (add-hook 'LaTeX-mode-hook 'visual-line-mode)
+        (add-hook 'LaTeX-mode-hook 'flyspell-mode)
+        (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
+        (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
+
+      ;; Eglot can use the Digestif language server for auto-completion.
+      (add-hook 'LaTeX-mode-hook 'eglot-ensure)
+
+        (setq reftex-plug-into-AUCTeX t)
+
+        (setq TeX-PDF-mode t)
+
+  ;; use pdf-tools as viewing program
+    (setq TeX-view-program-selection
+          '( (output-pdf "PDF Tools")))
+
+        ;;(setq TeX-view-program-selection
+        ;;    '((output-dvi "DVI Viewer")
+        ;;      (output-pdf "PDF Viewer")
+        ;;      (output-html "HTML Viewer")))
+
+  ;; Auto Revert is used to keep a buffer up to date when the associated file changes on disk, due to
+  ;; something outside of Emacs (due to a external program). The following hook ensures that the
+  ;; pdf-tools pdf viewer keeps up to date after the external LaTeX compiler updates the PDF.
+  (add-hook 'TeX-after-compilation-finished-functions #'TeX-revert-document-buffer)
+
+  (setq-default preview-scale-function 1.2)
+  (setq-default TeX-master nil) ; Query for master file upon compilation command.
+
+  ;; Method for forward and reverse search (between LaTeX code and PDF)
+  (setq TeX-source-correlate-method 'synctex)
+
+  ;; Use synctex so we can jump back and forth between the PDF and the LaTeX source
+  ;; Use shell-escape so the latex source can execute external programs, be sure to
+  ;; not run any random code from the web before you have read it!!
+  (setq TeX-command-extra-options "--shell-escape --synctex=1")
+#+end_src
+** RefTeX
+Is a part of Emacs. We want it enabled automatically for all LaTeX files.
+It is a package for support of labels, references, citations, and indices.
+#+begin_src emacs-lisp
+(add-hook 'LaTeX-mode-hook 'turn-on-reftex)   ; with AUCTeX LaTeX mode
+(add-hook 'latex-mode-hook 'turn-on-reftex)   ; with Emacs latex mode
+#+end_src
+** Citar
+Citar is used to browse and act on BibTeX, BibLaTeX, and CSL JSON bibliographic data.
+#+begin_src emacs-lisp
+  (use-package citar
+    :ensure t
+    :custom
+    (citar-bibliography '("~/bib/references.bib"))
+    :hook
+    (LaTeX-mode . citar-capf-setup)
+    (org-mode . citar-capf-setup))
+#+end_src
+* Sphinx
+** Sphinx-mode
+#+begin_src emacs-lisp
+  (use-package sphinx-mode
+  :ensure t)
+#+end_src
+* Org-mode
+** Basic config
+When editing code blocks in org-mode (C-c ') the
+code editor should open in the same window as your
+current .org file. I.e. it should temporaily replace
+your current window.
+#+begin_src emacs-lisp
+  (setq org-src-window-setup 'current-window)
+#+end_src
+
+Various configuration.
+#+begin_src emacs-lisp
+    ;; Set the directory to hold the agenda files. All files in folder should be included in agenda this way.
+    (setq org-agenda-files '("~/org"))
+
+    ;;Set the default directory to store notes from the org capture utility.
+    (setq org-default-notes-file (concat org-directory "/notes.org"))
+
+    ;; When a TODO is set to a done state, record a timestamp
+    (setq org-log-done 'time)
+
+    ;; Follow the links
+    (setq org-return-follows-link  t)
+
+    ;; Associate all org files with org mode
+    (add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
+
+    ;; Make the indentation look nicer
+    (add-hook 'org-mode-hook 'org-indent-mode)
+
+    ;; Hide the markers so you just see bold text as BOLD-TEXT and not *BOLD-TEXT*
+    (setq org-hide-emphasis-markers t)
+
+    ;; Wrap the lines in org mode so that things are easier to read
+    (add-hook 'org-mode-hook 'visual-line-mode)
+
+    ;; TODO states
+    (setq org-todo-keywords
+	'((sequence "TODO(t)" "PLANNING(p)" "IN-PROGRESS(i@/!)" "VERIFYING(v!)" "BLOCKED(b@)"  "|" "DONE(d!)" "OVERCOME(o@!)" "WONT-DO(w@/!)" )
+	  ))
+  
+  ;; TODO colors
+  (setq org-todo-keyword-faces
+	'(
+	  ("TODO" . (:foreground "GoldenRod" :weight bold))
+	  ("PLANNING" . (:foreground "DeepPink" :weight bold))
+	  ("IN-PROGRESS" . (:foreground "Cyan" :weight bold))
+	  ("VERIFYING" . (:foreground "DarkOrange" :weight bold))
+	  ("BLOCKED" . (:foreground "Red" :weight bold))
+	  ("DONE" . (:foreground "LimeGreen" :weight bold))
+	  ("OVERCOME" . (:foreground "LimeGreen" :weight bold))
+	  ("WONT-DO" . (:foreground "LimeGreen" :weight bold))
+	  ))
+#+end_src
+** Calender
+#+begin_src emacs-lisp
+(setq calendar-week-start-day 1)
+
+(setq calendar-intermonth-text
+      '(propertize
+        (format "%2d"
+                (car
+                 (calendar-iso-from-absolute
+                  (calendar-absolute-from-gregorian (list month day year)))))
+        'font-lock-face 'font-lock-warning-face))
+
+(setq calendar-intermonth-header
+      (propertize "Wk"
+                  'font-lock-face 'font-lock-keyword-face))
+#+end_src
+** Jupyter org-mode
+*** Conda
+Conda is a Emacs package for working with conda environments.
+**** TODO figure out why this does not work...
+#+begin_src emacs-lisp
+  ;;(use-package conda
+  ;;:ensure t)
+
+  (custom-set-variables
+ '(conda-anaconda-home "/usr/bin/conda/"))
+
+  ;;(require 'conda)
+  ;; if you want interactive shell support, include:
+  ;;(conda-env-initialize-interactive-shells)
+  ;; if you want eshell support, include:
+  ;;(conda-env-initialize-eshell)
+  ;; if you want auto-activation (see below for details), include:
+  ;;(conda-env-autoactivate-mode t)
+  ;; if you want to automatically activate a conda environment on the opening of a file:
+  ;;(add-to-hook 'find-file-hook (lambda () (when (bound-and-true-p conda-project-env-path)
+  ;;                                          (conda-env-activate-for-buffer))))
+
+    ;; (use-package conda
+    ;;   :ensure t
+    ;;   :config
+    ;;   (setq conda-anaconda-home (expand-file-name "~/software/conda/"))
+    ;;   (setq conda-env-home-directory (expand-file-name "~/software/conda/"))
+    ;;   (setq conda-env-subdirectory "envs"))
+
+    ;; (unless (getenv "CONDA_DEFAULT_ENV")
+    ;;   (conda-env-activate "base"))
+#+end_src
+*** Jupyter
+#+begin_src emacs-lisp
+(use-package jupyter
+  :ensure t)
+#+end_src
+** Presentations
+*** Org-present
+#+begin_src emacs-lisp
+  (use-package org-present
+  :ensure t)
+#+end_src
+*** Configuration
+#+begin_src emacs-lisp
+    ;; Install visual-fill-column
+    (unless (package-installed-p 'visual-fill-column)
+      (package-install 'visual-fill-column))
+
+    ;; Configure fill width
+    (setq visual-fill-column-width 110
+          visual-fill-column-center-text t)
+
+    (defun my/org-present-start ()
+  ;; Tweak font sizes
+  (setq-local face-remapping-alist '((default (:height 1.5) variable-pitch)
+                                     (header-line (:height 4.0) variable-pitch)
+                                     (org-document-title (:height 1.75) org-document-title)
+                                     (org-code (:height 1.55) org-code)
+                                     (org-verbatim (:height 1.55) org-verbatim)
+                                     (org-block (:height 1.25) org-block)
+                                     (org-block-begin-line (:height 0.7) org-block)))
+
+      ;; Center the presentation and wrap lines
+      (visual-fill-column-mode 1)
+      (visual-line-mode 1))
+
+    (defun my/org-present-end ()
+      ;; Reset font customizations
+  (setq-local face-remapping-alist '((default variable-pitch default)))
+  
+      ;; Stop centering the document
+      (visual-fill-column-mode 0)
+      (visual-line-mode 0))
+
+    ;; Register hooks with org-present
+    (add-hook 'org-present-mode-hook 'my/org-present-start)
+    (add-hook 'org-present-mode-quit-hook 'my/org-present-end)
+#+end_src
+** Babel
+#+begin_src emacs-lisp
+;; Do not require confirmation before evaluating code blocks
+  (setq org-confirm-babel-evaluate nil)
+#+end_src
+
+Load some languages
+#+begin_src emacs-lisp
+  (org-babel-do-load-languages
+   'org-babel-load-languages '((emacs-lisp . t)
+                               (C . t) ;; This includes C, C++ and D.
+                               (R . t)
+                               (shell . t)
+                               (python . t)
+                               (jupyter . t)))
+#+end_src
+** Source-code listings
+#+begin_src emacs-lisp
+ (add-to-list 'org-src-lang-modes '("conf" . conf)) 
+#+end_src
+** Shortcuts
+#+begin_src emacs-lisp
+;; Shortcuts for storing links, viewing the agenda, and starting a capture
+(define-key global-map "\C-cl" 'org-store-link)
+(define-key global-map "\C-ca" 'org-agenda)
+(define-key global-map "\C-cc" 'org-capture)
+#+end_src
+** Capture templates
+#+begin_src emacs-lisp
+  (setq org-capture-templates
+	'(    
+	  ("j" "Work Log Entry"
+	   entry (file+datetree "~/org/work-log.org")
+	   "* %?"
+	   :empty-lines 0)
+
+	  ("n" "Generic note"
+	 entry (file+headline "~/org/notes.org" "Random Notes")
+	 "** %?"
+	 :empty-lines 0)
+
+	  ("p" "Passwords and such"
+	   entry (file+headline "~/org/notes.org" "Passwrods and such")
+	   "** %?"
+	   :empty-lines 0)
+
+	  ("g" "General To-Do"
+	   entry (file+headline "~/org/todo.org" "General tasks")
+	   "* TODO [#B] %?\n:Created: %T\n "
+	   :empty-lines 0)
+
+	  ("c" "Code To-Do"
+	 entry (file+headline "~/org/todo.org" "Code Related Tasks")
+	 "* TODO [#B] %?\n:Created: %T\n%i\n%a\nProposed Solution: "
+	 :empty-lines 0)
+
+        ("m" "Meeting"
+         entry (file+datetree "~/org/meetings.org")
+         "* %? :meeting:%^g \n:Created: %T\n** Attendees\n*** \n** Notes\n** Action Items\n*** TODO [#A] "
+         :tree-type week
+         :clock-in t
+         :clock-resume t
+         :empty-lines 0)
+	  
+	))
+#+end_src
+** Tags
+#+begin_src emacs-lisp
+  ;; Tags
+  (setq org-tag-alist '(
+			;; Ticket types
+			(:startgroup . nil)
+			("@bug" . ?b)
+			("@feature" . ?u)
+			("@spike" . ?j)                      
+			(:endgroup . nil)
+
+			;; Ticket flags
+			("@write_future_ticket" . ?w)
+			("@emergency" . ?e)
+			("@research" . ?r)
+
+			;; Meeting types
+			(:startgroup . nil)
+			("big_sprint_review" . ?i)
+			("cents_sprint_retro" . ?n)
+			("dsu" . ?d)
+			("grooming" . ?g)
+			("sprint_retro" . ?s)
+			(:endgroup . nil)
+
+			;; Code TODOs tags
+			("QA" . ?q)
+			("backend" . ?k)
+			("broken_code" . ?c)
+			("frontend" . ?f)
+
+			;; Special tags
+			("CRITICAL" . ?x)
+			("obstacle" . ?o)
+
+			;; Meeting tags
+			("HR" . ?h)
+			("general" . ?l)
+			("meeting" . ?m)
+			("misc" . ?z)
+			("planning" . ?p)
+
+			;; Work Log Tags
+			("accomplishment" . ?a)
+			))
+
+;; Tag colors
+(setq org-tag-faces
+      '(
+        ("planning"  . (:foreground "mediumPurple1" :weight bold))
+        ("backend"   . (:foreground "royalblue1"    :weight bold))
+        ("frontend"  . (:foreground "forest green"  :weight bold))
+        ("QA"        . (:foreground "sienna"        :weight bold))
+        ("meeting"   . (:foreground "yellow1"       :weight bold))
+        ("CRITICAL"  . (:foreground "red1"          :weight bold))
+        )
+      )
+#+end_src
+** Org mode templates
+#+begin_src emacs-lisp
+  (add-to-list 'org-structure-template-alist
+               '("el" . "src emacs-lisp"))
+  (add-to-list 'org-structure-template-alist
+               '("ec" . "src C"))
+#+end_src
+** Org bullets
+#+begin_src emacs-lisp
+  (use-package org-bullets
+    :ensure t
+    :config
+    (add-hook 'org-mode-hook (lambda () (org-bullets-mode))))
+#+end_src
+** Export
+Syntax higlight in Org-mode documents which are exported to HTML.
+#+begin_src emacs-lisp
+(use-package htmlize
+  :ensure t)
+#+end_src
+Install ox-reveal for exporting Org-mode documents as reveal.js presentations.
+#+begin_src emacs-lisp
+;;  (use-package ox-reveal
+;;  :ensure t)
+;;  (setq org-reveal-root "file:///home/eirik/bin/reveal.js")
+#+end_src
+Install org-re-reveal (fork of org-reveal)
+#+begin_src emacs-lisp
+  (use-package org-re-reveal
+  :ensure t)
+  (setq org-re-reveal-root "file:///home/eirik/bin/reveal.js")
+#+end_src
+Configure additional export options for Org-mode.
+#+begin_src emacs-lisp
+  (require 'ox-md) ;; Markdown export
+  ;;(require 'ox-s5) ;; S5 presentation export
+#+end_src
+Settings for Org-mode
+** Agenda
+This section holds configuration for the org-mode agenda view.
+*** Custom agenda view
+#+begin_src emacs-lisp
+  ;; ;; Agenda View "d"
+  ;; (defun air-org-skip-subtree-if-priority (priority)
+  ;;   "Skip an agenda subtree if it has a priority of PRIORITY.
+
+  ;;   PRIORITY may be one of the characters ?A, ?B, or ?C."
+  ;;   (let ((subtree-end (save-excursion (org-end-of-subtree t)))
+  ;;         (pri-value (* 1000 (- org-lowest-priority priority)))
+  ;;         (pri-current (org-get-priority (thing-at-point 'line t))))
+  ;;     (if (= pri-value pri-current)
+  ;;         subtree-end
+  ;;       nil)))
+
+  ;; (setq org-agenda-skip-deadline-if-done t)
+
+  ;; (setq org-agenda-custom-commands
+  ;;       '(
+  ;;         ;; Daily Agenda & TODOs
+  ;;         ("d" "Daily agenda and all TODOs"
+
+  ;;          ;; Display items with priority A
+  ;;          ((tags "PRIORITY=\"A\""
+  ;;                 ((org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
+  ;;                  (org-agenda-overriding-header "High-priority unfinished tasks:")))
+
+  ;;           ;; View 7 days in the calendar view
+  ;;           (agenda "" ((org-agenda-span 7)))
+
+  ;;           ;; Display items with priority B (really it is view all items minus A & C)
+  ;;           (alltodo ""
+  ;;                    ((org-agenda-skip-function '(or (air-org-skip-subtree-if-priority ?A)
+  ;;                                                    (air-org-skip-subtree-if-priority ?C)
+  ;;                                                    (org-agenda-skip-if nil '(scheduled deadline))))
+  ;;                     (org-agenda-overriding-header "ALL normal priority tasks:")))
+
+  ;;           ;; Display items with pirority C
+  ;;           (tags "PRIORITY=\"C\""
+  ;;                 ((org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
+  ;;                  (org-agenda-overriding-header "Low-priority Unfinished tasks:")))
+  ;;           )
+
+  ;;          ;; Don't compress things (change to suite your tastes)
+  ;;          ((org-agenda-compact-blocks nil)))
+  ;;         ))
+#+end_src
+*** Super agenda
+org-super-agenda is a package for organization of the various agenda items in to categories.
+#+begin_src emacs-lisp
+      (use-package org-super-agenda
+      :ensure t
+:config (add-hook 'org-mode-hook (lambda () (org-super-agenda-mode))))
+
+    (setq org-agenda-custom-commands
+          '(
+            ;; Super View
+            ("j" "Super View"
+             (
+              (agenda ""
+                      (
+                       (org-agenda-remove-tags t)                                       
+                       (org-agenda-span 3)
+                       )
+                      )
+
+              (alltodo ""
+                       (
+                        ;; Remove tags to make the view cleaner
+                        (org-agenda-remove-tags t)
+                        (org-agenda-prefix-format "  %t  %s")                    
+                        (org-agenda-overriding-header "CURRENT STATUS")
+
+                        ;; Define the super agenda groups (sorts by order)
+                        (org-super-agenda-groups
+                         '(
+                           ;; Filter where tag is CRITICAL
+                           (:name "Critical Tasks"
+                                  :tag "CRITICAL"
+                                  :order 0
+                                  )
+                           ;; Filter where TODO state is IN-PROGRESS
+                           (:name "Currently Working"
+                                  :todo "IN-PROGRESS"
+                                  :order 1
+                                  )
+                           ;; Filter where TODO state is PLANNING
+                           (:name "Planning Next Steps"
+                                  :todo "PLANNING"
+                                  :order 2
+                                  )
+                           ;; Filter where TODO state is BLOCKED or where the tag is obstacle
+                           (:name "Problems & Blockers"
+                                  :todo "BLOCKED"
+                                  :tag "obstacle"                              
+                                  :order 3
+                                  )
+                           ;; Filter where tag is @write_future_ticket
+                           (:name "Tickets to Create"
+                                  :tag "@write_future_ticket"
+                                  :order 4
+                                  )
+                           ;; Filter where tag is @research
+                           (:name "Research Required"
+                                  :tag "@research"
+                                  :order 7
+                                  )
+                           ;; Filter where tag is meeting and priority is A (only want TODOs from meetings)
+                           (:name "Meeting Action Items"
+                                  :and (:tag "meeting" :priority "A")
+                                  :order 8
+                                  )
+                           ;; Filter where state is TODO and the priority is A and the tag is not meeting
+                           (:name "Other Important Items"
+                                  :and (:todo "TODO" :priority "A" :not (:tag "meeting"))
+                                  :order 9
+                                  )
+                           ;; Filter where state is TODO and priority is B
+                           (:name "General Backlog"
+                                  :and (:todo "TODO" :priority "B")
+                                  :order 10
+                                  )
+                           ;; Filter where the priority is C or less (supports future lower priorities)
+                           (:name "Non Critical"
+                                  :priority<= "C"
+                                  :order 11
+                                  )
+                           ;; Filter where TODO state is VERIFYING
+                           (:name "Currently Being Verified"
+                                  :todo "VERIFYING"
+                                  :order 20
+                                  )
+                           )
+                         )
+                        )
+                       )
+              ))
+            ))
+#+end_src
+* Markdown
+#+begin_src emacs-lisp
+(use-package markdown-mode
+  :ensure t
+  :mode ("README\\.md\\'" . gfm-mode)
+  :init (setq markdown-command "multimarkdown"))
+#+end_src
+* Searcing
+** Swiper
+Ivy-enhanced alternative to Isearch. It is wery good, but I use helm-occur instead.
+Another alternative is helm-swoop, which is a package external to the core of helm,
+but since helm-occur has been improved, there is not that much benefit from using it.
+#+begin_src emacs-lisp
+  ;;(use-package swiper
+  ;;:ensure t
+  ;;:bind ("C-s" . swiper))
+#+end_src
+* Dashboard and project management
+** Dashboard
+#+begin_src emacs-lisp
+  (use-package dashboard
+    :ensure t
+    :config
+    (dashboard-setup-startup-hook)
+    (setq dashboard-items '((recents . 10)))
+    (setq dashboard-banner-logo-title "Novitech Emacs"))
+#+end_src
+** Projectile
+Projectile is a project management package. Emacs has built in project management now, and it
+is starting to obtain the same feature set as projectile. Still I have had some trouble with
+the built in project management, and thus I will stick with Projectile for now.
+#+begin_src emacs-lisp
+      (use-package projectile
+        :ensure t
+        :init
+        (projectile-mode 1))
+
+  (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+#+end_src
+** Cmake project management
+#+begin_src emacs-lisp
+
+#+end_src
+** Treemacs
+#+begin_src emacs-lisp
+    (use-package treemacs
+      :ensure t
+      :defer t
+      :init
+      (with-eval-after-load 'winum
+        (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
+      :config
+      (progn
+        (setq treemacs-collapse-dirs                   (if treemacs-python-executable 3 0)
+              treemacs-deferred-git-apply-delay        0.5
+              treemacs-directory-name-transformer      #'identity
+              treemacs-display-in-side-window          t
+              treemacs-eldoc-display                   'simple
+              treemacs-file-event-delay                2000
+              treemacs-file-extension-regex            treemacs-last-period-regex-value
+              treemacs-file-follow-delay               0.2
+              treemacs-file-name-transformer           #'identity
+              treemacs-follow-after-init               t
+              treemacs-expand-after-init               t
+              treemacs-find-workspace-method           'find-for-file-or-pick-first
+              treemacs-git-command-pipe                ""
+              treemacs-goto-tag-strategy               'refetch-index
+              treemacs-header-scroll-indicators        '(nil . "^^^^^^")
+              treemacs-hide-dot-git-directory          t
+              treemacs-indentation                     2
+              treemacs-indentation-string              " "
+              treemacs-is-never-other-window           nil
+              treemacs-max-git-entries                 5000
+              treemacs-missing-project-action          'ask
+              treemacs-move-forward-on-expand          nil
+              treemacs-no-png-images                   nil
+              treemacs-no-delete-other-windows         t
+              treemacs-project-follow-cleanup          nil
+              treemacs-persist-file                    (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
+              treemacs-position                        'left
+              treemacs-read-string-input               'from-child-frame
+              treemacs-recenter-distance               0.1
+              treemacs-recenter-after-file-follow      nil
+              treemacs-recenter-after-tag-follow       nil
+              treemacs-recenter-after-project-jump     'always
+              treemacs-recenter-after-project-expand   'on-distance
+              treemacs-litter-directories              '("/node_modules" "/.venv" "/.cask")
+              treemacs-project-follow-into-home        nil
+              treemacs-show-cursor                     nil
+              treemacs-show-hidden-files               t
+              treemacs-silent-filewatch                nil
+              treemacs-silent-refresh                  nil
+              treemacs-sorting                         'alphabetic-asc
+              treemacs-select-when-already-in-treemacs 'move-back
+              treemacs-space-between-root-nodes        t
+              treemacs-tag-follow-cleanup              t
+              treemacs-tag-follow-delay                1.5
+              treemacs-text-scale                      nil
+              treemacs-user-mode-line-format           nil
+              treemacs-user-header-line-format         nil
+              treemacs-wide-toggle-width               70
+              treemacs-width                           35
+              treemacs-width-increment                 1
+              treemacs-width-is-initially-locked       t
+              treemacs-workspace-switch-cleanup        nil)
+
+        ;; The default width and height of the icons is 22 pixels. If you are
+        ;; using a Hi-DPI display, uncomment this to double the icon size.
+        ;;(treemacs-resize-icons 44)
+
+        (treemacs-follow-mode t)
+        (treemacs-filewatch-mode t)
+        (treemacs-fringe-indicator-mode 'always)
+        (when treemacs-python-executable
+          (treemacs-git-commit-diff-mode t))
+
+        (pcase (cons (not (null (executable-find "git")))
+                     (not (null treemacs-python-executable)))
+          (`(t . t)
+           (treemacs-git-mode 'deferred))
+          (`(t . _)
+           (treemacs-git-mode 'simple)))
+
+        (treemacs-hide-gitignored-files-mode nil))
+      :bind
+      (:map global-map
+            ("M-0"       . treemacs-select-window)
+            ("C-x t 1"   . treemacs-delete-other-windows)
+            ("C-x t t"   . treemacs)
+            ("C-x t d"   . treemacs-select-directory)
+            ("C-x t B"   . treemacs-bookmark)
+            ("C-x t C-t" . treemacs-find-file)
+            ("C-x t M-t" . treemacs-find-tag)))
+
+  ;; Disable drag and drop in treemacs, as this feature only causes sorrow and despair when
+  ;; your files suddenly are moved to some random directory.
+  ;; TODO: Figure out why this is not working.
+;;(define-key treemacs-mode-map [drag-mouse-1] nil)
+
+    ;(use-package treemacs-evil
+    ;  :after (treemacs evil)
+    ;  :ensure t)
+
+    (use-package treemacs-projectile
+      :after (treemacs projectile)
+      :ensure t)
+
+    (use-package treemacs-icons-dired
+      :hook (dired-mode . treemacs-icons-dired-enable-once)
+      :ensure t)
+
+    (use-package treemacs-magit
+      :after (treemacs magit)
+      :ensure t)
+
+    ;;(use-package treemacs-persp ;;treemacs-perspective if you use perspective.el vs. persp-mode
+    ;;  :after (treemacs persp-mode) ;;or perspective vs. persp-mode
+    ;;  :ensure t
+    ;;  :config (treemacs-set-scope-type 'Perspectives))
+
+    (use-package treemacs-tab-bar ;;treemacs-tab-bar if you use tab-bar-mode
+      :after (treemacs)
+      :ensure t
+      :config (treemacs-set-scope-type 'Tabs))
+#+end_src
+* Help tools
+** Which key
+Display the available key combinations which are supported after
+a given key. E.g. after C-x a window will pop up which tells you
+what any additional key will do.
+#+begin_src emacs-lisp
+  (use-package which-key
+    :ensure t
+    :init
+    (which-key-mode))
+#+end_src
+* Text editing
+** Encoding
+#+begin_src emacs-lisp
+  (setq locale-coding-system 'utf-8)
+  (set-terminal-coding-system 'utf-8)
+  (set-keyboard-coding-system 'utf-8)
+  (set-selection-coding-system 'utf-8)
+  (prefer-coding-system 'utf-8)
+#+end_src
+** Subword
+Treat each subword in a camel-cased word as separate words
+#+begin_src emacs-lisp
+  (global-subword-mode 1)
+#+end_src
+** Electric
+For auto-complete of stuff (e.g. parentheses)
+I am not a big fan of this type of auto complete,
+hence the code is commented out.
+#+begin_src emacs-lisp
+    ;;(setq electric-pair-pairs '( (?\( . ?\) ))
+    ;;(electric-pair-mode t)
+#+end_src
+** Scroll line by line when moving beyond the screen border
+#+begin_src emacs-lisp
+  ;; Scroll line by line
+  (setq scroll-conservatively 100)
+#+end_src
+** Kill whole word
+By default Emacs does not kill a whole word, only
+from cursor position to the end, or beginning of
+the word.
+#+begin_src emacs-lisp
+  (defun kill-whole-word ()
+    "Kill a whole word even if cursor is in middle of the word."
+    (interactive)
+    (forward-char 2)
+    (backward-word)
+    (kill-word 1))
+  (keymap-global-set "C-c w w" 'kill-whole-word)
+#+end_src
+** Hungry delete
+Delete whitespace in a hungry way. This is sometimes
+useful, but comment it out if it annoys you. There is also a built in  hungry delete
+feature in enabled in some programming modes.
+#+begin_src emacs-lisp
+;;  (use-package hungry-delete
+;;    :ensure t
+;;    :config (global-hungry-delete-mode))
+#+end_src
+** Copy whole line
+#+begin_src emacs-lisp
+  (defun copy-whole-line ()
+    (interactive)
+    (save-excursion
+      (kill-new
+       (buffer-substring
+	(point-at-bol)
+	(point-at-eol)))))
+  (keymap-global-set "C-c w l" 'copy-whole-line)
+#+end_src
+** Kill ring menu
+The popup-kill-ring package is old and not working too well
+#+begin_src emacs-lisp
+  ;; (use-package popup-kill-ring
+  ;;   :ensure t
+  ;;   :bind ("M-y" . popup-kill-ring))
+#+end_src
+
+Open a new window with a list of all items in the
+kill ring. Allows you to select which item you want
+to yank.
+Commented since "Helm has build-in support for browsing the kill-ring when `helm-mode` is enabled."
+#+begin_src emacs-lisp
+;;  (use-package browse-kill-ring
+;;    :ensure t
+;;    )
+#+end_src
+
+** Multiple cursors
+mark-multiple is no longer maintained, use multiple-cursors instead.
+Allows you to mark multiple occurances of the same text.
+#+begin_src emacs-lisp
+  (use-package multiple-cursors
+  :ensure t
+  :bind (("H-SPC" . set-rectangular-region-anchor)
+	 ("C-M-SPC" . set-rectangular-region-anchor)
+	 ("C->" . mc/mark-next-like-this)
+	 ("C-<" . mc/mark-previous-like-this)
+	 ("C-c C->" . mc/mark-all-like-this)
+	 ("C-c C-SPC" . mc/edit-lines)
+	 ))
+
+;;  (keymap-global-set "C-S-c C-S-c" 'mc/edit-lines)
+#+end_src
+** Expand region
+Allow you to quickly expand the region of selected text.
+#+begin_src emacs-lisp
+  (use-package expand-region
+  :ensure t
+  :bind ("C-c w q" . er/expand-region))
+#+end_src
+** Company (Auto complete)
+Company (CompleteAnything) is a package for auto-complete. In combination with Eglot it can get auto-complete when writing software.
+#+begin_src emacs-lisp
+  (use-package company
+    :ensure t
+    :init
+    (add-hook 'after-init-hook 'global-company-mode))
+#+end_src
+*** Company box
+#+begin_src emacs-lisp
+  (use-package company-box
+  :ensure t
+    :hook (company-mode . company-box-mode))
+#+end_src
+* IDO and Helm
+** Helm
+#+begin_src emacs-lisp
+  (use-package helm
+              :ensure t
+              :bind
+              ("C-x C-f" . 'helm-find-files)
+              ;;("C-x C-h" . 'helm-buffer-list)
+              ("M-x" . 'helm-M-x)
+              ("C-s" . 'helm-occur)
+      :config
+        (setq helm-autoresize-max-height 0
+            helm-autoresize-min-height 40
+            helm-M-x-fuzzy-match t
+            helm-buffers-fuzzy-matching t
+            helm-recentf-fuzzy-match t
+            helm-semantic-fuzzy-match t
+            helm-imenu-fuzzy-match t
+            helm-split-window-in-side-p nil
+            helm-move-to-line-cycle-in-source nil
+            helm-ff-search-library-in-sexp t
+            helm-scroll-amount 8 
+            helm-echo-input-in-header-line t))
+
+  (helm-autoresize-mode 1)
+  (helm-mode 1)
+  ;;(keymap-global-set "C-x C-m" 'helm-buffer-list)
+#+end_src
+** Enable IDO mode
+Use Helm instead of IDO
+#+BEGIN_QUOTE
+To use Ido for some commands and Helm for others, do not enable ido-mode. Instead, customize helm-completing-read-handlers-alist to specify which command uses Ido.
+#+END_QUOTE
+#+begin_src emacs-lisp
+  ;; (setq ido-enable-flex-matching nil)
+  ;; (setq ido-create-new-buffer 'always)
+  ;; (setq ido-everywhere t)
+  ;; (ido-mode 1)
+#+end_src
+** IDO vertical
+Use Helm instead of IDO vertical
+#+begin_src emacs-lisp
+  ;; (use-package ido-vertical-mode
+  ;;   :ensure t
+  ;;   :init
+  ;;   (ido-vertical-mode 1))
+  ;; (setq ido-vertical-define-keys 'C-n-and-C-p-only)
+#+end_src
+
+** SMEX
+SMEX - M-x enhancement built on top of Ido.
+#+begin_src emacs-lisp
+  ;; (use-package smex
+  ;;   :ensure t
+  ;;   :init (smex-initialize)
+  ;;   :bind
+  ;;   ("M-x" . smex))
+#+end_src
+** Switch buffer
+#+begin_src emacs-lisp
+  ;;(keymap-global-set "C-x C-b" 'ido-switch-buffer)
+#+end_src
+* Buffers
+** Enable ibuffer
+Enable a more convenient way to browse the available buffers
+/Commented since we use Helm instead./
+#+begin_src emacs-lisp
+;;  (keymap-global-set "C-x b" 'ibuffer)
+;;  (setq ibuffer-expert t)
+#+end_src
+** Kill current buffer
+Add command to kill current buffer.
+#+begin_src emacs-lisp
+    (defun kill-current-buffer ()
+      (interactive)
+      (save-buffer)
+      (kill-buffer (current-buffer)))
+  ;; (keymap-global-set "C-x k" 'kill-current-buffer)
+#+end_src
+** Kill all buffers
+#+begin_src emacs-lisp
+  (defun kill-all-buffers ()
+    (interactive)
+    (save-some-buffers)
+    (ampc 'kill-buffer (buffer-list)))
+  (keymap-global-set "C-M-s-k" 'kill-all-buffers)
+#+end_src
+* Avy
+Allow us to quickly jump to words in a text file by using the M-s key
+combination, followed by the char you want to jump to, and then typing
+the highlighted chars which appears.
+#+begin_src emacs-lisp
+  (use-package avy
+    :ensure t
+    :bind
+    ("M-s" . avy-goto-char))
+#+end_src
+
+* Config edit and reload
+** Edit
+#+begin_src emacs-lisp
+  (defun config-visit ()
+    (interactive)
+    (find-file "~/.emacs.d/config.org"))
+  (keymap-global-set "C-c e" 'config-visit)
+#+end_src
+
+** Reload
+#+begin_src emacs-lisp
+  (defun config-reload ()
+    (interactive)
+    (org-babel-load-file (expand-file-name "~/.emacs.d/config.org")))
+  (keymap-global-set "C-c r" 'config-reload)
+#+end_src
+
+* Colors
+** Rainbow
+Display hex color codes in color
+#+begin_src emacs-lisp
+  (use-package rainbow-mode
+    :ensure t
+    :hook prog-mode)
+    ;;:init (add-hook 'prog-mode-hook 'rainbow-mode))
+#+end_src
+
+** Rainbow delimiters
+Colorize the delimiters to make them more easy to identify.
+#+begin_src emacs-lisp
+    (use-package rainbow-delimiters
+      :ensure t
+      :init
+      (add-hook 'prog-mode-hook #'rainbow-delimiters-mode))
+#+end_src
+* Windows
+** Switch windows
+Show a shortcut key when you have more than two windows open, and what to switch window with C-x o
+#+begin_src emacs-lisp
+  (use-package switch-window
+    :ensure t
+    :config
+    (setq switch-window-input-style 'minibuffer)
+    (setq switch-window-increase 4)
+    (setq switch-window-threshold 2)
+    (setq switch-window-shortcut-style 'qwerty)
+    (setq switch-window-qwerty-shortcuts
+	  '("a" "s" "d" "f" "j" "k" "l"))
+    :bind
+    ([remap other-window] . switch-window))
+#+end_src
+** Split window follow
+After you split the window it is nice if your cursor follows in to the new window.
+#+begin_src emacs-lisp
+  (defun split-and-follow-horizontally ()
+    (interactive)
+    (split-window-below)
+    (balance-windows)
+    (other-window 1))
+  (keymap-global-set "C-x 2" 'split-and-follow-horizontally)
+
+  (defun split-and-follow-vertically ()
+    (interactive)
+    (split-window-right)
+    (balance-windows)
+    (other-window 1))
+  (keymap-global-set "C-x 3" 'split-and-follow-vertically)
+#+end_src
+** Window resize
+Use M-x windresize, and then the arrow keys to resize the currently active window.
+#+begin_src emacs-lisp
+  (use-package windresize
+  :ensure t)
+#+end_src
+** Workspaces
+*** Perspective
+#+begin_src emacs-lisp
+  ;; (use-package perspective
+  ;;   :ensure t
+  ;;   :bind (("C-M-k" . persp-switch)
+  ;;          ("C-M-n" . persp-next)
+  ;;          ("C-x k" . persp-kill-buffer*)
+  ;;          ;;("C-x C-b" . persp-list-buffers)
+  ;;          )
+  ;;   :custom
+  ;;   (persp-initial-frame-name "Main")
+  ;;   (persp-mode-prefix-key (kbd "C-c M-p"))  ; 
+  ;;   :config
+  ;;   ;; Running `persp-mode' multiple times resets the perspective list...
+  ;;   (unless (equal persp-mode t)
+  ;;     (persp-mode)))
+#+end_src
+*** Tabspaces
+Allows us to "create buffer-isolated workspaces (or “tabspaces”) that also integrate with your version-controlled projects"
+#+begin_src emacs-lisp
+  ;; (use-package tabspaces
+  ;;   ;; use this next line only if you also use straight, otherwise ignore it. 
+  ;;   ;; :straight (:type git :host github :repo "mclear-tools/tabspaces")
+  ;;   :hook (after-init . tabspaces-mode) ;; use this only if you want the minor-mode loaded at startup. 
+  ;;   :commands (tabspaces-switch-or-create-workspace
+  ;;              tabspaces-open-or-create-project-and-workspace)
+  ;;   :custom
+  ;;   (tabspaces-use-filtered-buffers-as-default t)
+  ;;   (tabspaces-default-tab "Default")
+  ;;   (tabspaces-remove-to-default t)
+  ;;   (tabspaces-include-buffers '("*scratch*"))
+  ;;   (tabspaces-initialize-project-with-todo t)
+  ;;   (tabspaces-todo-file-name "project-todo.org")
+  ;;   ;; sessions
+  ;;   (tabspaces-session t)
+  ;;   (tabspaces-session-auto-restore t))
+#+end_src
+* Admin tools
+** sudo edit
+#+begin_src emacs-lisp
+  (use-package sudo-edit
+    :ensure t
+    :bind ("C-c s" . sudo-edit))
+#+end_src
+
+* Mode line
+** Spaceline
+Spaceline is the modeline from spacemacs. We are not using the whole of spacemacs, but the mode line is nice.
+#+begin_src emacs-lisp
+  (use-package spaceline
+    :ensure t
+    :config
+    (require 'spaceline-config)
+    (setq powerline-default-separator (quote arrow))
+    (spaceline-spacemacs-theme))
+#+end_src
+** Diminish
+Remove some minor modes from the mode line to make it less cluttered
+#+begin_src emacs-lisp
+            (use-package diminish
+              :ensure t
+              :init
+              (diminish 'hungry-delete-mode)
+              (diminish 'beacon-mode)
+              (diminish 'which-key-mode)
+              (diminish 'subword-mode)
+              (diminish 'rainbow-mode)
+              (diminish 'yas-minor-mode)
+              (diminish 'flycheck-mode)
+              (diminish 'eldoc-mode)
+              (diminish 'helm-mode)
+              (diminish 'visual-line-mode)
+              (diminish 'company-box-mode))
+#+end_src
+* Emax as window manager with EXWM
+Emacs window manager.
+#+begin_src emacs-lisp
+  ;; (use-package exwm
+  ;;   :ensure t
+  ;;   :config
+  ;;   (require 'exwm-config)
+  ;;   (exwm-config-default))
+#+end_src
+** Dmenu
+#+begin_src emacs-lisp
+  (use-package dmenu
+    :ensure t
+    :bind
+    ("C-c d" . dmenu))
+#+end_src
+
+* Multimedia
+Emacs can be used as a music player. Not sure if I want to do that though.
