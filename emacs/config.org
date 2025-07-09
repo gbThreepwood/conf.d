@@ -156,7 +156,7 @@ Eglot (or Emacs Polyglot) is the built in package for LSP in Emacs.
     python-shell-interpreter-args "-i --simple-prompt")
 #+end_src
 *** Elpy
-Elpy is a package for Python programming. Even though you have LSP (Eglot) enabled it is still
+Elpy is a package for Python programming. Even if you have LSP (Eglot) enabled it is still
 convenient.
 #+begin_src emacs-lisp
  (use-package elpy
@@ -381,49 +381,55 @@ your current window.
   (setq org-src-window-setup 'current-window)
 #+end_src
 
-Various configuration.
+Make the TAB key cycle the display of org-mode headings while in normal evil-mode
+I.e. make it work without having to go to insert mode.
 #+begin_src emacs-lisp
-    ;; Set the directory to hold the agenda files. All files in folder should be included in agenda this way.
-    (setq org-agenda-files '("~/org"))
+  (evil-define-key 'normal org-mode-map (kbd "<tab>") #'org-cycle)
+#+end_src
 
-    ;;Set the default directory to store notes from the org capture utility.
-    (setq org-default-notes-file (concat org-directory "/notes.org"))
+  Various configuration.
+  #+begin_src emacs-lisp
+      ;; Set the directory to hold the agenda files. All files in folder should be included in agenda this way.
+      (setq org-agenda-files '("~/org"))
 
-    ;; When a TODO is set to a done state, record a timestamp
-    (setq org-log-done 'time)
+      ;;Set the default directory to store notes from the org capture utility.
+      (setq org-default-notes-file (concat org-directory "/notes.org"))
 
-    ;; Follow the links
-    (setq org-return-follows-link  t)
+      ;; When a TODO is set to a done state, record a timestamp
+      (setq org-log-done 'time)
 
-    ;; Associate all org files with org mode
-    (add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
+      ;; Follow the links
+      (setq org-return-follows-link  t)
 
-    ;; Make the indentation look nicer
-    (add-hook 'org-mode-hook 'org-indent-mode)
+      ;; Associate all org files with org mode
+      (add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
 
-    ;; Hide the markers so you just see bold text as BOLD-TEXT and not *BOLD-TEXT*
-    (setq org-hide-emphasis-markers t)
+      ;; Make the indentation look nicer
+      (add-hook 'org-mode-hook 'org-indent-mode)
 
-    ;; Wrap the lines in org mode so that things are easier to read
-    (add-hook 'org-mode-hook 'visual-line-mode)
+      ;; Hide the markers so you just see bold text as BOLD-TEXT and not *BOLD-TEXT*
+      (setq org-hide-emphasis-markers t)
 
-    ;; TODO states
-    (setq org-todo-keywords
-	'((sequence "TODO(t)" "PLANNING(p)" "IN-PROGRESS(i@/!)" "VERIFYING(v!)" "BLOCKED(b@)"  "|" "DONE(d!)" "OVERCOME(o@!)" "WONT-DO(w@/!)" )
-	  ))
+      ;; Wrap the lines in org mode so that things are easier to read
+      (add-hook 'org-mode-hook 'visual-line-mode)
+
+      ;; TODO states
+      (setq org-todo-keywords
+          '((sequence "TODO(t)" "PLANNING(p)" "IN-PROGRESS(i@/!)" "VERIFYING(v!)" "BLOCKED(b@)"  "|" "DONE(d!)" "OVERCOME(o@!)" "WONT-DO(w@/!)" )
+            ))
   
-  ;; TODO colors
-  (setq org-todo-keyword-faces
-	'(
-	  ("TODO" . (:foreground "GoldenRod" :weight bold))
-	  ("PLANNING" . (:foreground "DeepPink" :weight bold))
-	  ("IN-PROGRESS" . (:foreground "Cyan" :weight bold))
-	  ("VERIFYING" . (:foreground "DarkOrange" :weight bold))
-	  ("BLOCKED" . (:foreground "Red" :weight bold))
-	  ("DONE" . (:foreground "LimeGreen" :weight bold))
-	  ("OVERCOME" . (:foreground "LimeGreen" :weight bold))
-	  ("WONT-DO" . (:foreground "LimeGreen" :weight bold))
-	  ))
+    ;; TODO colors
+    (setq org-todo-keyword-faces
+          '(
+            ("TODO" . (:foreground "GoldenRod" :weight bold))
+            ("PLANNING" . (:foreground "DeepPink" :weight bold))
+            ("IN-PROGRESS" . (:foreground "Cyan" :weight bold))
+            ("VERIFYING" . (:foreground "DarkOrange" :weight bold))
+            ("BLOCKED" . (:foreground "Red" :weight bold))
+            ("DONE" . (:foreground "LimeGreen" :weight bold))
+            ("OVERCOME" . (:foreground "LimeGreen" :weight bold))
+            ("WONT-DO" . (:foreground "LimeGreen" :weight bold))
+            ))
 #+end_src
 ** Jupyter org-mode
 *** Conda
@@ -463,47 +469,133 @@ Conda is a Emacs package for working with conda environments.
   :ensure t)
 #+end_src
 ** Presentations
+*** Org-tree-slide
+#+begin_src emacs-lisp
+  (use-package hide-mode-line
+   :ensure t)
+
+  (defun efs/presentation-setup ()
+    ;; Hide the mode line
+    (hide-mode-line-mode 1)
+
+    ;; Display images inline
+    (org-display-inline-images) ;; Can also use org-startup-with-inline-images
+
+    ;; Scale the text.  The next line is for basic scaling:
+    (setq text-scale-mode-amount 3)
+    (text-scale-mode 1))
+    (setq org-format-latex-options (plist-put org-format-latex-options :scale 2.0))
+    ;; This option is more advanced, allows you to scale other faces too
+    ;; (setq-local face-remapping-alist '((default (:height 2.0) variable-pitch)
+    ;;                                    (org-verbatim (:height 1.75) org-verbatim)
+    ;;                                    (org-block (:height 1.25) org-block))))
+
+  (defun efs/presentation-end ()
+    ;; Show the mode line again
+    (hide-mode-line-mode 0)
+
+    ;; Turn off text scale mode (or use the next line if you didn't use text-scale-mode)
+    (text-scale-mode 0)
+
+    ;; If you use face-remapping-alist, this clears the scaling:
+    (setq-local face-remapping-alist '((default variable-pitch default))))
+
+  (use-package org-tree-slide
+    :ensure t
+    :hook ((org-tree-slide-play . efs/presentation-setup)
+           (org-tree-slide-stop . efs/presentation-end))
+    :custom
+    (org-tree-slide-slide-in-effect t)
+    (org-tree-slide-activate-message "Presentation started!")
+    (org-tree-slide-deactivate-message "Presentation finished!")
+    (org-tree-slide-header t)
+    (org-tree-slide-breadcrumbs " > ")
+    (org-image-actual-width nil))  
+#+end_src
+
+#+RESULTS:
+: presentation-setup
+
 *** Org-present
 #+begin_src emacs-lisp
-  (use-package org-present
-  :ensure t)
+;  (use-package org-present
+;  :ensure t)
 #+end_src
 *** Configuration
 #+begin_src emacs-lisp
-    ;; Install visual-fill-column
-    (unless (package-installed-p 'visual-fill-column)
-      (package-install 'visual-fill-column))
-
-    ;; Configure fill width
-    (setq visual-fill-column-width 110
-          visual-fill-column-center-text t)
-
-    (defun my/org-present-start ()
-  ;; Tweak font sizes
-  (setq-local face-remapping-alist '((default (:height 1.5) variable-pitch)
-                                     (header-line (:height 4.0) variable-pitch)
-                                     (org-document-title (:height 1.75) org-document-title)
-                                     (org-code (:height 1.55) org-code)
-                                     (org-verbatim (:height 1.55) org-verbatim)
-                                     (org-block (:height 1.25) org-block)
-                                     (org-block-begin-line (:height 0.7) org-block)))
-
-      ;; Center the presentation and wrap lines
-      (visual-fill-column-mode 1)
-      (visual-line-mode 1))
-
-    (defun my/org-present-end ()
-      ;; Reset font customizations
-  (setq-local face-remapping-alist '((default variable-pitch default)))
-  
-      ;; Stop centering the document
-      (visual-fill-column-mode 0)
-      (visual-line-mode 0))
-
-    ;; Register hooks with org-present
-    (add-hook 'org-present-mode-hook 'my/org-present-start)
-    (add-hook 'org-present-mode-quit-hook 'my/org-present-end)
+;    ;; Install visual-fill-column
+;    (unless (package-installed-p 'visual-fill-column)
+;      (package-install 'visual-fill-column))
+;
+;    ;; Configure fill width
+;    (setq visual-fill-column-width 110
+;          visual-fill-column-center-text t)
+;
+;    (defun my/org-present-start ()
+;  ;; Tweak font sizes
+;  (setq-local face-remapping-alist '((default (:height 1.5) variable-pitch)
+;                                     (header-line (:height 4.0) variable-pitch)
+;                                     (org-document-title (:height 1.75) org-document-title)
+;                                     (org-code (:height 1.55) org-code)
+;                                     (org-verbatim (:height 1.55) org-verbatim)
+;                                     (org-block (:height 1.25) org-block)
+;                                     (org-block-begin-line (:height 0.7) org-block)))
+;
+;      ;; Center the presentation and wrap lines
+;      (visual-fill-column-mode 1)
+;      (visual-line-mode 1))
+;
+;    (defun my/org-present-end ()
+;      ;; Reset font customizations
+;  (setq-local face-remapping-alist '((default variable-pitch default)))
+;  
+;      ;; Stop centering the document
+;      (visual-fill-column-mode 0)
+;      (visual-line-mode 0))
+;
+;    ;; Register hooks with org-present
+;    (add-hook 'org-present-mode-hook 'my/org-present-start)
+;    (add-hook 'org-present-mode-quit-hook 'my/org-present-end)
 #+end_src
+*** Beamer
+#+begin_src emacs-lisp
+;;  (unless (boundp 'org-export-latex-classes)
+;;  (setq org-export-latex-classes nil))
+;;  
+;;  (add-to-list 'org-export-latex-classes
+;;    ;; beamer class, for presentations
+;;    '("beamer"
+;;       "\\documentclass[11pt]{beamer}\n
+;;        \\mode<{{{beamermode}}}>\n
+;;        \\usetheme{{{{beamertheme}}}}\n
+;;        \\usecolortheme{{{{beamercolortheme}}}}\n
+;;        \\beamertemplateballitem\n
+;;        \\setbeameroption{show notes}
+;;        \\usepackage[utf8]{inputenc}\n
+;;        \\usepackage[T1]{fontenc}\n
+;;        \\usepackage{hyperref}\n
+;;        \\usepackage{color}
+;;        \\usepackage{listings}
+;;        \\lstset{numbers=none,language=[ISO]C++,tabsize=4,
+;;    frame=single,
+;;    basicstyle=\\small,
+;;    showspaces=false,showstringspaces=false,
+;;    showtabs=false,
+;;    keywordstyle=\\color{blue}\\bfseries,
+;;    commentstyle=\\color{red},
+;;    }\n
+;;        \\usepackage{verbatim}\n
+;;        \\institute{{{{beamerinstitute}}}}\n          
+;;         \\subject{{{{beamersubject}}}}\n"
+;;
+;;       ("\\section{%s}" . "\\section*{%s}")
+;;       
+;;       ("\\begin{frame}[fragile]\\frametitle{%s}"
+;;         "\\end{frame}"
+;;         "\\begin{frame}[fragile]\\frametitle{%s}"
+;;         "\\end{frame}")))
+#+end_src
+
 ** Babel
 #+begin_src emacs-lisp
 ;; Do not require confirmation before evaluating code blocks
@@ -534,31 +626,31 @@ Load some languages
 ** Capture templates
 #+begin_src emacs-lisp
   (setq org-capture-templates
-	'(    
-	  ("j" "Work Log Entry"
-	   entry (file+datetree "~/org/work-log.org")
-	   "* %?"
-	   :empty-lines 0)
+  	'(    
+  	  ("j" "Work Log Entry"
+  	   entry (file+datetree "~/org/work-log.org")
+  	   "* %?"
+  	   :empty-lines 0)
 
-	  ("n" "Generic note"
-	 entry (file+headline "~/org/notes.org" "Random Notes")
-	 "** %?"
-	 :empty-lines 0)
+  	  ("n" "Generic note"
+  	 entry (file+headline "~/org/notes.org" "Random Notes")
+  	 "** %?"
+  	 :empty-lines 0)
 
-	  ("p" "Passwords and such"
-	   entry (file+headline "~/org/notes.org" "Passwrods and such")
-	   "** %?"
-	   :empty-lines 0)
+  	  ("p" "Passwords and such"
+  	   entry (file+headline "~/org/notes.org" "Passwrods and such")
+  	   "** %?"
+  	   :empty-lines 0)
 
-	  ("g" "General To-Do"
-	   entry (file+headline "~/org/todo.org" "General tasks")
-	   "* TODO [#B] %?\n:Created: %T\n "
-	   :empty-lines 0)
+  	  ("g" "General To-Do"
+  	   entry (file+headline "~/org/todo.org" "General tasks")
+  	   "* TODO [#B] %?\n:Created: %T\n "
+  	   :empty-lines 0)
 
-	  ("c" "Code To-Do"
-	 entry (file+headline "~/org/todo.org" "Code Related Tasks")
-	 "* TODO [#B] %?\n:Created: %T\n%i\n%a\nProposed Solution: "
-	 :empty-lines 0)
+  	  ("c" "Code To-Do"
+  	 entry (file+headline "~/org/todo.org" "Code Related Tasks")
+  	 "* TODO [#B] %?\n:Created: %T\n%i\n%a\nProposed Solution: "
+  	 :empty-lines 0)
 
         ("m" "Meeting"
          entry (file+datetree "~/org/meetings.org")
@@ -567,9 +659,36 @@ Load some languages
          :clock-in t
          :clock-resume t
          :empty-lines 0)
-	  
-	))
+  	  
+  	))
+
+  ;; Populates only the EXPORT_FILE_NAME property in the inserted heading.
+(with-eval-after-load 'org-capture
+  (defun org-hugo-new-subtree-post-capture-template ()
+    "Returns `org-capture' template string for new Hugo post.
+See `org-capture-templates' for more information."
+    (let* ((title (read-from-minibuffer "Post Title: ")) ;Prompt to enter the post title
+           (fname (org-hugo-slug title)))
+      (mapconcat #'identity
+                 `(
+                   ,(concat "* TODO " title)
+                   ":PROPERTIES:"
+                   ,(concat ":EXPORT_FILE_NAME: " fname)
+                   ":END:"
+                   "%?\n")          ;Place the cursor here finally
+                 "\n")))
+
+  (add-to-list 'org-capture-templates
+               '("h"                ;`org-capture' binding + h
+                 "Hugo post"
+                 entry
+                 ;; It is assumed that below file is present in `org-directory'
+                 ;; and that it has a "Blog Ideas" heading. It can even be a
+                 ;; symlink pointing to the actual location of all-posts.org!
+                 (file+olp "all-posts.org" "Blog Ideas")
+                 (function org-hugo-new-subtree-post-capture-template))))
 #+end_src
+
 ** Tags
 #+begin_src emacs-lisp
   ;; Tags
@@ -717,94 +836,99 @@ This section holds configuration for the org-mode agenda view.
 *** Super agenda
 org-super-agenda is a package for organization of the various agenda items in to categories.
 #+begin_src emacs-lisp
-      (use-package org-super-agenda
-      :ensure t
-:config (add-hook 'org-mode-hook (lambda () (org-super-agenda-mode))))
+        (use-package org-super-agenda
+        :ensure t
+  :config (add-hook 'org-mode-hook (lambda () (org-super-agenda-mode))))
 
-    (setq org-agenda-custom-commands
-          '(
-            ;; Super View
-            ("j" "Super View"
-             (
-              (agenda ""
-                      (
-                       (org-agenda-remove-tags t)                                       
-                       (org-agenda-span 3)
-                       )
-                      )
-
-              (alltodo ""
-                       (
-                        ;; Remove tags to make the view cleaner
-                        (org-agenda-remove-tags t)
-                        (org-agenda-prefix-format "  %t  %s")                    
-                        (org-agenda-overriding-header "CURRENT STATUS")
-
-                        ;; Define the super agenda groups (sorts by order)
-                        (org-super-agenda-groups
-                         '(
-                           ;; Filter where tag is CRITICAL
-                           (:name "Critical Tasks"
-                                  :tag "CRITICAL"
-                                  :order 0
-                                  )
-                           ;; Filter where TODO state is IN-PROGRESS
-                           (:name "Currently Working"
-                                  :todo "IN-PROGRESS"
-                                  :order 1
-                                  )
-                           ;; Filter where TODO state is PLANNING
-                           (:name "Planning Next Steps"
-                                  :todo "PLANNING"
-                                  :order 2
-                                  )
-                           ;; Filter where TODO state is BLOCKED or where the tag is obstacle
-                           (:name "Problems & Blockers"
-                                  :todo "BLOCKED"
-                                  :tag "obstacle"                              
-                                  :order 3
-                                  )
-                           ;; Filter where tag is @write_future_ticket
-                           (:name "Tickets to Create"
-                                  :tag "@write_future_ticket"
-                                  :order 4
-                                  )
-                           ;; Filter where tag is @research
-                           (:name "Research Required"
-                                  :tag "@research"
-                                  :order 7
-                                  )
-                           ;; Filter where tag is meeting and priority is A (only want TODOs from meetings)
-                           (:name "Meeting Action Items"
-                                  :and (:tag "meeting" :priority "A")
-                                  :order 8
-                                  )
-                           ;; Filter where state is TODO and the priority is A and the tag is not meeting
-                           (:name "Other Important Items"
-                                  :and (:todo "TODO" :priority "A" :not (:tag "meeting"))
-                                  :order 9
-                                  )
-                           ;; Filter where state is TODO and priority is B
-                           (:name "General Backlog"
-                                  :and (:todo "TODO" :priority "B")
-                                  :order 10
-                                  )
-                           ;; Filter where the priority is C or less (supports future lower priorities)
-                           (:name "Non Critical"
-                                  :priority<= "C"
-                                  :order 11
-                                  )
-                           ;; Filter where TODO state is VERIFYING
-                           (:name "Currently Being Verified"
-                                  :todo "VERIFYING"
-                                  :order 20
-                                  )
-                           )
+      (setq org-agenda-custom-commands
+            '(
+              ;; Super View
+              ("j" "Super View"
+               (
+                (agenda ""
+                        (
+                         (org-agenda-remove-tags t)                                       
+                         (org-agenda-span 3)
                          )
                         )
-                       )
+
+                (alltodo ""
+                         (
+                          ;; Remove tags to make the view cleaner
+                          (org-agenda-remove-tags t)
+                          (org-agenda-prefix-format "  %t  %s")                    
+                          (org-agenda-overriding-header "CURRENT STATUS")
+
+                          ;; Define the super agenda groups (sorts by order)
+                          (org-super-agenda-groups
+                           '(
+                             ;; Filter where tag is CRITICAL
+                             (:name "Critical Tasks"
+                                    :tag "CRITICAL"
+                                    :order 0
+                                    )
+                             ;; Filter where TODO state is IN-PROGRESS
+                             (:name "Currently Working"
+                                    :todo "IN-PROGRESS"
+                                    :order 1
+                                    )
+                              ;; Filter where TODO state is PROJECT
+                              (:name "Long term projects"
+                                  :todo "PROJECT"
+                                  :order 1
+                                  )
+                             ;; Filter where TODO state is PLANNING
+                             (:name "Planning Next Steps"
+                                    :todo "PLANNING"
+                                    :order 2
+                                    )
+                             ;; Filter where TODO state is BLOCKED or where the tag is obstacle
+                             (:name "Problems & Blockers"
+                                    :todo "BLOCKED"
+                                    :tag "obstacle"                              
+                                    :order 3
+                                    )
+                             ;; Filter where tag is @write_future_ticket
+                             (:name "Tickets to Create"
+                                    :tag "@write_future_ticket"
+                                    :order 4
+                                    )
+                             ;; Filter where tag is @research
+                             (:name "Research Required"
+                                    :tag "@research"
+                                    :order 7
+                                    )
+                             ;; Filter where tag is meeting and priority is A (only want TODOs from meetings)
+                             (:name "Meeting Action Items"
+                                    :and (:tag "meeting" :priority "A")
+                                    :order 8
+                                    )
+                             ;; Filter where state is TODO and the priority is A and the tag is not meeting
+                             (:name "Other Important Items"
+                                    :and (:todo "TODO" :priority "A" :not (:tag "meeting"))
+                                    :order 9
+                                    )
+                             ;; Filter where state is TODO and priority is B
+                             (:name "General Backlog"
+                                    :and (:todo "TODO" :priority "B")
+                                    :order 10
+                                    )
+                             ;; Filter where the priority is C or less (supports future lower priorities)
+                             (:name "Non Critical"
+                                    :priority<= "C"
+                                    :order 11
+                                    )
+                             ;; Filter where TODO state is VERIFYING
+                             (:name "Currently Being Verified"
+                                    :todo "VERIFYING"
+                                    :order 20
+                                    )
+                             )
+                           )
+                          )
+                         )
+                ))
               ))
-            ))
 #+end_src
 * Markdown
 #+begin_src emacs-lisp
@@ -983,6 +1107,15 @@ what any additional key will do.
     (which-key-mode))
 #+end_src
 * Text editing
+** Crux
+A Collection of Ridiculously Useful eXtensions for Emacs.
+#+begin_src emacs-lisp
+  (unless (package-installed-p 'crux)
+    (package-refresh-contents)
+    (package-install 'crux))
+
+  (global-set-key (kbd "C-c o") #'crux-open-with)
+#+end_src
 ** Encoding
 #+begin_src emacs-lisp
   (setq locale-coding-system 'utf-8)
