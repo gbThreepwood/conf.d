@@ -37,7 +37,8 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-vc-selected-packages
-   '((kbd-mode :vc-backend Git :url "https://www.github.com/kmonad/kbd-mode"))))
+   '((kbd-mode :vc-backend Git :url
+	       "https://www.github.com/kmonad/kbd-mode"))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
