@@ -17,6 +17,10 @@
 (unless (package-installed-p 'evil)
   (package-install 'evil))
 (require 'evil)
+
+;; Disable C-i to jump forward to restore TAB functionality in Org mode.
+(setq evil-want-C-i-jump nil)
+
 (evil-mode 1)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

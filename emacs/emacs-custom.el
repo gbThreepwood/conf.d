@@ -9,18 +9,9 @@
    '("7fd8b914e340283c189980cd1883dbdef67080ad1a3a9cc3df864ca53bdc89cf"
      default))
  '(package-selected-packages
-   '(auctex beacon cdlatex citar company-box dashboard diminish dmenu
-	    elpy evil expand-region format-all gnuplot-mode helm
-	    kbd-mode markdown-mode multiple-cursors ob-spice
-	    org-babel-gnuplot org-bullets org-present org-re-reveal
-	    org-super-agenda ox-hugo pdf-tools plantuml-mode
-	    rainbow-delimiters rainbow-mode spaceline spacemacs-theme
-	    sphinx-mode sudo-edit switch-window treemacs-icons-dired
-	    treemacs-magit treemacs-projectile treemacs-tab-bar
-	    visual-fill-column windresize yasnippet-snippets))
+   '(hide-mode-line org-tree-slide crux pdf-tools perspective windresize org-re-reveal ox-reveal visual-fill-column org-present jupyter elpy auctex markdown-mode sphinx-mode org-super-agenda platformio-mode format-all expand-region multiple-cursors mark-multiple swiper citar kbd-mode treemacs-tab-bar treemacs-persp treemacs-magit treemacs-icons-dired treemacs-projectile treemacs sublimity-scroll sublimity linum-relative magit helm ob-spice spice-mode flycheck yasnippet-snippets yasnippet projectile browse-kill-ring popup-kill-ring exwm symon dmenu diminish spaceline company dashboard rainbow-delimiters sudo-edit hungry-delete switch-window rainbow-mode avy smex ido-vertical-mode org-bullets beacon spacemacs-theme which-key use-package))
  '(package-vc-selected-packages
-   '((kbd-mode :vc-backend Git :url
-	       "https://www.github.com/kmonad/kbd-mode"))))
+   '((kbd-mode :vc-backend Git :url "https://www.github.com/kmonad/kbd-mode"))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
