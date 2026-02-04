@@ -81,3 +81,17 @@ export LS_COLORS
 zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
 
 alias ls='ls -hF --color=auto'
+
+# Prevent nesting of Ranger instances.
+ranger() {
+    if [ -z "$RANGER_LEVEL" ]; then
+        /usr/bin/ranger "$@"
+    else
+        exit
+    fi
+}
+
+export PATH="$PATH:/home/eirik/bin:/home/eirik/.local/share/gem/ruby/3.0.0/bin:/home/eirik/qp/qtools/bin:/home/eirik/qp/qm/bin"
+export PATH="/home/eirik/media/nedlastingar/Program/FPGA/oss-cad-suite/bin:$PATH"
+export PATH="/home/eirik/.config/emacs/bin:$PATH"
+

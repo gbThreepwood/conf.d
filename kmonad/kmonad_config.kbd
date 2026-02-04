@@ -1,0 +1,183 @@
+#|
+This is a kmonad configuration for a Dell XPS 13 laptop with Norwegian keyboard layout.
+It is still a WIP
+
+Copyleft 2024 - Eirik Haustveit
+|#
+
+(defcfg
+  ;; For Linux
+  ;; input  (device-file "/dev/input/by-id/usb-Kinesis_Advantage2_Keyboard_314159265359-if01-event-kbd")
+  input  (device-file "/dev/input/by-path/platform-i8042-serio-0-event-kbd")
+  output (uinput-sink "Builtin kbd KMonad output")
+ 
+  ;; This option tells KMonad to let non-configured keys act normal
+  fallthrough false
+
+  ;; Allows Kmonad macros to execute shell commands
+  allow-cmd true
+)
+
+;; Keyboard layout of built in keyboard of laptop model Dell XPS13.
+;;
+;; There is also a fn button which is not visible to the OS, but it changes
+;; the scan-codes for some keys when pressed down.
+;; If we want to disable this button we could create a layer which maps the
+;; scan-codes of pressed down fn, to the same keys as when it is not pressed down.
+;; If we want to detect the fn button it could perhaps be possible to constantly press
+;; some other button (e.g. by gluing it down), and then detect the change in scan-code
+;; from this other button as a press of fn.
+(defsrc
+  esc   f1   f2   f3   f4   f5   f6   f7   f8   f9   f10  f11       f12    home    end    del
+  grv   1    2    3    4    5    6    7    8    9    0    -         =      bspc
+  tab   q    w    e    r    t    y    u    i    o    p    [         ]      ret
+  caps  a    s    d    f    g    h    j    k    l    ;    '         \
+  lsft  102d z    x    c    v    b    n    m    ,    .    /         rsft
+  lctl       lmet lalt      spc       ralt  rctl                    pgup   up      pgdn
+                                                                    left   down    rght
+  )
+
+;; The left and right arrows are to small, and you will easily hit PgUp or PgDn when navigating
+;; with them. Hence it is better to just map the Pg keys to left and right.
+;; --
+;; The Caps Lock is not something I use a lot. For Vim I usually map it to Esc, but for Emacs
+;; I need easy access to both Ctrl and Alt so I use home row mods instead.
+;;
+(deflayer baselayer
+  caps  f1   f2   f3   f4   f5   f6   f7   f8   f9   f10  prnt      ins    home    end    del
+  grv   1    2    3    4    5    6    7    8    9    0    -         =      bspc
+  tab   q    w    e    r    t    y    u    i    o    p    [         ]      ret
+  @mlt  a    s    d    f    g    h    j    k    l    ;    '         \
+  lsft  102d z    x    c    v    b    n    m    ,    .    /         rsft
+  lctl       lmet lalt      spc       ralt  rctl                    left   up      rght
+                                                                    left   down    rght
+  )
+
+#|
+Layer template
+
+(deflayer baselayer
+  _     _    _    _    _    _    _    _    _    _    _    _      _      _      _    _
+  _     _    _    _    _    _    _    _    _    _    _    _      _      _
+  _     _    _    _    _    _    _    _    _    _    _    _      _      _
+  _     _    _    _    _    _    _    _    _    _    _    _      _
+  _     _    _    _    _    _    _    _    _    _    _    _             _
+  _          _    _              _              _    _    _      _      _
+                                                          _      _      _
+  )
+
+|#
+
+(defalias
+    ;; Multi use button.
+    mlt (tap-next esc (layer-toggle playground))
+
+    ;; Copying, pasting, and cutting.
+    cpy C-c
+    pst C-v
+    cut C-x
+
+    ;; One advantage of Kmonad when compared to open keyboard firmware such as QMK is the ability
+    ;; to directly execute software commands. The commands are executed in the context where you launced
+    ;; the kmonad process. I am not sure if it is possible to convert the output from a command to keystrokes
+    ;; so that the following could add information to the text file I am editing:
+
+    ;; Who am I macro (just for fun)
+    wai (cmd-button "whoami")
+    unm (cmd-button "uname -a")
+    
+    ;; For when you try to get the record in  those games where you should
+    ;; type the alphabet as fast as you can. This is the Norwegian version,
+    ;; the last three symbols becomes æøå on a Norwegian keyboard layout.
+    abc (tap-macro a b c d e f g h i j k l m n o p q r s t u v w x y z ' ; [)
+    
+    mod1 (around a (around b c))
+  
+    hmod  (layer-switch homerowmods)
+    base  (layer-switch baselayer)
+    play  (layer-switch playground)
+
+    qwe (layer-switch qwerty) ;; Set qwerty as the base layer
+    col (layer-switch colemakdh) ;; Set colemak-dh as the base layer
+    
+    met_a (tap-hold-next-release 200 a lmet)
+    alt_s (tap-hold-next-release 200 s lalt)
+    ctl_d (tap-hold-next-release 200 d lctl)
+    sft_f (tap-hold-next-release 200 f lsft)
+
+    sft_j (tap-hold-next-release 200 j rsft)
+    ctl_k (tap-hold-next-release 200 k rctl)
+    alt_l (tap-hold-next-release 200 l lalt)
+    met_; (tap-hold-next-release 200 ; rmet)
+)
+
+(deflayer homerowmods
+  caps  f1     f2     f3       f4       f5    f6    f7     f8       f9       f10       f11       f12    home    end    del
+  grv   1      2      3        4        5     6     7      8        9        0         -         =      bspc
+  tab   q      w      e        r        t     y     u      i        o        p         [         ]      ret
+  esc   @met_a @alt_s @ctl_d   @sft_f   g     h     @sft_j @ctl_k   @alt_l   @met_;    '         \
+  lsft  102d   z      x        c        v     b     n      m        ,        .         /         @base
+  lctl         lmet   lalt     spc      ralt  rctl                  left     up        rght
+                                                                    left     down      rght
+  )
+
+(deflayer playground
+  caps  f1     f2     f3       f4       f5    f6    f7     f8       f9       @unm      @wai      @mod1    @abc    end    del
+  grv   1      2      3        4        5     6     7      8        9        0         -         =      bspc
+  tab   q      w      e        r        t     y     u      i        o        p         [         ]      ret
+  _     @met_a @alt_s @ctl_d   @sft_f   g     h     @sft_j @ctl_k   @alt_l   @met_;    '         \
+  lsft  102d   z      x        c        v     b     n      m        ,        .         /         @base
+  lctl         lmet   lalt     spc      ralt  rctl                  left     up        rght
+                                                                    left     down      rght
+  )
+
+(deflayer qwerty
+  caps  f1   f2   f3   f4   f5   f6   f7   f8   f9   f10  f11       f12    home    end    del
+  grv   1    2    3    4    5    6    7    8    9    0    -         =      bspc
+  tab   q    w    e    r    t    y    u    i    o    p    [         ]      ret
+  esc   a    s    d    f    g    h    j    k    l    ;    '         \
+  lsft  102d z    x    c    v    b    n    m    ,    .    /         @base
+  lctl       lmet lalt      spc       ralt  rctl                    left   up      rght
+                                                                    left   down    rght
+  )
+
+;; For the Norwegian layout we have:
+;; ' = æ
+;; ; = ø
+;; [ = å
+(deflayer colemakdh
+  caps  f1   f2   f3   f4   f5   f6   f7   f8   f9   f10  f11       f12    home    end    del
+  grv   1    2    3    4    5    6    7    8    9    0    -         =      bspc
+  tab   q    w    f    p    b    j    l    u    y    ;    [         ]      ret
+  esc   a    r    s    t    g    m    n    e    i    o    '         \
+  lsft  z    x    c    d    v    grv  k    h    ,    .    /         @base
+  lctl       lmet lalt      spc       ralt  rctl                    left   up      rght
+                                                                    left   down    rght
+  )
+
+(deflayer qwrtyhomerowmods
+  _     _        _        _         _        _        _         _        _        _         _    _      _      _      _    _
+  _     _        _        _         _        _        _         _        _        _         _    _      _      _
+  _     _        _        _         _        _        _         _        _        _         _    _      _      _
+  _     @met_a   @alt_s   @ctl_d    @sft_f   g        h         @sft_j   @ctl_k   @alt_l    @met_;      _      _
+  _     _        _        _         _        _        _         _        _        _         _    _             _
+  _              _        _                           _                           _    _    _      _      _
+                                                                                            _      _      _
+  )
+
+(defalias    
+    cmet_a (tap-hold-next-release 200 a lmet)
+    calt_r (tap-hold-next-release 200 r lalt)
+    cctl_s (tap-hold-next-release 200 s lctl)
+    csft_t (tap-hold-next-release 200 t lsft)
+
+    csft_n (tap-hold-next-release 200 n rsft)
+    cctl_e (tap-hold-next-release 200 e rctl)
+    calt_i (tap-hold-next-release 200 i lalt)
+    cmet_o (tap-hold-next-release 200 o rmet)
+)
+
+
+;;(deflayer colmhomerowmods
+;;    @met_a   @alt_r   @ctl_s   @sft_t   g   m   @sft_n   @ctl_e   @alt_i   @met_o
+;;)

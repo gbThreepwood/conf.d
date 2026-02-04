@@ -3,7 +3,7 @@ conf.d
 
 Various configuration files and scripts.
 
-Clone the repository:
+Clone the repository to your home directory:
 
 `git clone https://github.com/gbThreepwood/conf.d.git`
 
@@ -18,7 +18,36 @@ Use the caps-lock button for something slightly more useful by swapping it with 
 
 `setxkbmap -option 'ctrl:swapcaps'`
 
-Software
+For a more advanced alternative, see the next section.
+
+Kmonad
+-----------
+
+Kmonad is nice when you do not have a QMK keyboard, such as when you are using your laptop internal keyboard. If you want to use Kmonad you should configure it to start automatically upon boot of your computer.
+
+You need to be member of the `input` group to capture the keyboard events from the real keyboard, and member of the uinput group to generate the key events from software.
+
+```
+sudo usermod -aG input $USER
+sudo groupadd uinput
+sudo usermod -aG uinput $USER
+```
+
+Add the following udev rule:
+
+```
+KERNEL=="uinput", MODE="0660", GROUP="uinput", OPTIONS+="static_node=uinput"
+```
+
+Make sure the uinput kernel module is loaded:
+
+```
+echo uinput | sudo tee /etc/modules-load.d/uinput.conf
+```
+
+
+
+SOFTWARE
 --------
 
 The repository keeps configurations for at least the following software:
