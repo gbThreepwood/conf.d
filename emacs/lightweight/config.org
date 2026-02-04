@@ -1,0 +1,205 @@
+#+STARTUP: overview
+#+TITLE: Emacs configuration
+#+CREATOR: Eirik Haustveit
+#+LANGUAGE: en
+#+OPTIONS: num:nil
+* Fundamental settings
+#+begin_src emacs-lisp
+  ;; Disable bell
+  (setq ring-bell-function 'ignore)
+  (setq vc-follow-symlinks t) ;; Disable warning about following symbolic link to version controlled file.
+#+end_src
+
+** Shortcuts
+
+Add a key to open the config file.
+#+begin_src emacs-lisp
+(defun config-visit ()
+  (interactive)
+  (find-file "~/.emacs.d/config.org"))
+(keymap-global-set "C-c e" 'config-visit)
+#+end_src
+
+Add a key to reload the config file.
+#+begin_src emacs-lisp
+(defun config-reload ()
+  (interactive)
+  (org-babel-load-file (expand-file-name "~/.emacs.d/config.org")))
+(keymap-global-set "C-c r" 'config-reload)
+#+end_src
+
+
+** Dashboard
+Show a simple dashboard when Emacs start
+#+begin_src emacs-lisp
+(use-package dashboard
+  :ensure t
+  :config
+  (dashboard-setup-startup-hook)
+  (setq dashboard-items '((recents . 10)))
+  (setq dashboard-banner-logo-title "Switchcraft Emacs"))
+#+end_src
+
+
+** Graphical bars
+#+begin_src emacs-lisp
+  (menu-bar-mode 1)
+  (scroll-bar-mode 1)
+  (tool-bar-mode -1)
+
+  ;(line-number-mode 1)
+  ;(column-number-mode 1)
+#+end_src
+
+** C-g should close the minibuffer if it is open
+#+begin_src emacs-lisp
+(defun prot/keyboard-quit-dwim ()
+  "Do-What-I-Mean behaviour for a general `keyboard-quit'.
+
+The generic `keyboard-quit' does not do the expected thing when
+the minibuffer is open.  Whereas we want it to close the
+minibuffer, even without explicitly focusing it.
+
+The DWIM behaviour of this command is as follows:
+
+- When the region is active, disable it.
+- When a minibuffer is open, but not focused, close the minibuffer.
+- When the Completions buffer is selected, close it.
+- In every other case use the regular `keyboard-quit'."
+  (interactive)
+  (cond
+   ((region-active-p)
+    (keyboard-quit))
+   ((derived-mode-p 'completion-list-mode)
+    (delete-completion-window))
+   ((> (minibuffer-depth) 0)
+    (abort-recursive-edit))
+   (t
+    (keyboard-quit))))
+
+(define-key global-map (kbd "C-g") #'prot/keyboard-quit-dwim)
+#+end_src
+
+** Theme
+#+begin_src emacs-lisp
+(use-package modus-themes
+  :ensure t
+  :config
+  (load-theme 'modus-vivendi-tinted :no-confirm-loading))
+#+end_src
+
+
+* Org-mode
+#+begin_src emacs-lisp
+  ;; Set the directory to hold the agenda files. All files in folder should be included in agenda this way.
+  (setq org-agenda-files '("~/sync/org"))
+
+  ;;Set the default directory to store notes from the org capture utility.
+  (setq org-default-notes-file (concat org-directory "/notes.org"))
+
+  ;; When a TODO is set to a done state, record a timestamp
+  (setq org-log-done 'time)
+
+  ;; Follow the links
+  (setq org-return-follows-link  t)
+
+  ;; Associate all org files with org mode
+  (add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
+
+  ;; Make the indentation look nicer
+  (add-hook 'org-mode-hook 'org-indent-mode)
+
+  ;; Hide the markers so you just see bold text as BOLD-TEXT and not *BOLD-TEXT*
+  (setq org-hide-emphasis-markers t)
+
+  ;; Wrap the lines in org mode so that things are easier to read
+  (add-hook 'org-mode-hook 'visual-line-mode)
+
+  ;; TODO states
+  (setq org-todo-keywords
+      '((sequence "TODO(t)" "PLANNING(p)" "IN-PROGRESS(i@/!)" "VERIFYING(v!)" "BLOCKED(b@)"  "|" "DONE(d!)" "OVERCOME(o@!)" "WONT-DO(w@/!)" )
+        ))
+  
+;; TODO colors
+(setq org-todo-keyword-faces
+      '(
+        ("TODO" . (:foreground "GoldenRod" :weight bold))
+        ("PLANNING" . (:foreground "DeepPink" :weight bold))
+        ("IN-PROGRESS" . (:foreground "Cyan" :weight bold))
+        ("VERIFYING" . (:foreground "DarkOrange" :weight bold))
+        ("BLOCKED" . (:foreground "Red" :weight bold))
+        ("DONE" . (:foreground "LimeGreen" :weight bold))
+        ("OVERCOME" . (:foreground "LimeGreen" :weight bold))
+        ("WONT-DO" . (:foreground "LimeGreen" :weight bold))
+        ))
+#+end_src
+
+** Capture templates
+
+#+begin_src emacs-lisp
+  (setq org-capture-templates
+  	'(    
+  	  ("j" "Work Log Entry"
+  	   entry (file+datetree "~/org/work-log.org")
+  	   "* %?"
+  	   :empty-lines 0)
+
+  	  ("n" "Generic note"
+  	 entry (file+headline "~/org/notes.org" "Random Notes")
+  	 "** %?"
+  	 :empty-lines 0)
+
+  	  ("p" "Passwords and such"
+  	   entry (file+headline "~/org/notes.org" "Passwrods and such")
+  	   "** %?"
+  	   :empty-lines 0)
+
+  	  ("g" "General To-Do"
+  	   entry (file+headline "~/org/todo.org" "General tasks")
+  	   "* TODO [#B] %?\n:Created: %T\n "
+  	   :empty-lines 0)
+
+  	  ("c" "Code To-Do"
+  	 entry (file+headline "~/org/todo.org" "Code Related Tasks")
+  	 "* TODO [#B] %?\n:Created: %T\n%i\n%a\nProposed Solution: "
+  	 :empty-lines 0)
+
+        ("m" "Meeting"
+         entry (file+datetree "~/org/meetings.org")
+         "* %? :meeting:%^g \n:Created: %T\n** Attendees\n*** \n** Notes\n** Action Items\n*** TODO [#A] "
+         :tree-type week
+         :clock-in t
+         :clock-resume t
+         :empty-lines 0)
+  	  
+  	))
+#+end_src
+
+
+* Helm
+
+#+begin_src emacs-lisp
+(use-package helm
+            :ensure t
+            :bind
+            ("C-x C-f" . 'helm-find-files)
+            ;;("C-x C-h" . 'helm-buffer-list)
+            ("M-x" . 'helm-M-x)
+            ("C-s" . 'helm-occur)
+    :config
+      (setq helm-autoresize-max-height 0
+          helm-autoresize-min-height 40
+          helm-M-x-fuzzy-match t
+          helm-buffers-fuzzy-matching t
+          helm-recentf-fuzzy-match t
+          helm-semantic-fuzzy-match t
+          helm-imenu-fuzzy-match t
+          helm-split-window-in-side-p nil
+          helm-move-to-line-cycle-in-source nil
+          helm-ff-search-library-in-sexp t
+          helm-scroll-amount 8 
+          helm-echo-input-in-header-line t))
+
+(helm-autoresize-mode 1)
+(helm-mode 1)
+#+end_src
